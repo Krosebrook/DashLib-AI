@@ -1,7 +1,10 @@
+
 import React, { useState } from 'react';
 import { Template } from '../types';
-import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy } from 'lucide-react';
+import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy, Play } from 'lucide-react';
 import { generateDashboardCode } from '../services/geminiService';
+import SecuritySandbox from './SecuritySandbox';
+import ModelSandbox from './ModelSandbox';
 
 interface TemplateModalProps {
   template: Template;
@@ -9,7 +12,7 @@ interface TemplateModalProps {
 }
 
 const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'details' | 'code'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'code' | 'sandbox'>('details');
   const [generatedCode, setGeneratedCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +21,6 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
     if (!generatedCode) {
       setIsLoading(true);
       const code = await generateDashboardCode(template);
-      // Strip markdown code blocks if present
       const cleanCode = code.replace(/```tsx|```typescript|```javascript|```/g, "");
       setGeneratedCode(cleanCode);
       setIsLoading(false);
@@ -29,9 +31,25 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
     navigator.clipboard.writeText(generatedCode);
   };
 
+  const renderSandbox = () => {
+    if (template.id === 'security-compliance') {
+      return <SecuritySandbox />;
+    }
+    if (template.id === 'llm-performance-comparison') {
+      return <ModelSandbox />;
+    }
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-slate-500">
+        <Play className="w-12 h-12 mb-4 opacity-20" />
+        <p className="font-bold">Sandbox coming soon for this template.</p>
+        <p className="text-sm">Use the "Generate React Code" tab to see the implementation.</p>
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
@@ -52,6 +70,15 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
           >
             Specification
           </button>
+          {template.hasInteractiveSandbox && (
+            <button 
+              onClick={() => setActiveTab('sandbox')}
+              className={`flex-1 py-4 text-sm font-medium text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'sandbox' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            >
+              <Play className="w-4 h-4" />
+              Live Sandbox
+            </button>
+          )}
           <button 
             onClick={handleGenerateCode}
             className={`flex-1 py-4 text-sm font-medium text-center border-b-2 transition-colors flex items-center justify-center gap-2 ${activeTab === 'code' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -64,8 +91,7 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
           {activeTab === 'details' ? (
-            <div className="space-y-8">
-              {/* Overview */}
+            <div className="space-y-8 pb-10">
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                   <FileText className="w-5 h-5 text-slate-400" />
@@ -79,12 +105,11 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
                   </div>
                   <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <span className="block text-slate-400 text-xs uppercase mb-1">Complexity</span>
-                    <span className="font-semibold text-slate-800">Intermediate</span>
+                    <span className="font-semibold text-slate-800">Enterprise</span>
                   </div>
                 </div>
               </div>
 
-              {/* Data & Metrics */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                   <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
@@ -135,23 +160,14 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
                 </div>
               </div>
 
-              {/* Notes */}
               <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 mb-2">Implementation Notes</h3>
                 <p className="text-slate-600 text-sm">{template.notes}</p>
-                {template.variants && (
-                  <div className="mt-4 pt-4 border-t border-slate-100">
-                    <span className="text-xs font-semibold text-slate-400 uppercase">Available Variants</span>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {template.variants.map(v => (
-                        <span key={v} className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded">
-                          {v}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
+            </div>
+          ) : activeTab === 'sandbox' ? (
+            <div className="h-full">
+              {renderSandbox()}
             </div>
           ) : (
             <div className="h-full flex flex-col">
