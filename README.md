@@ -1,3 +1,4 @@
+
 # 📊 DashLib AI
 **The Enterprise-Grade Dashboard Template Library Powered by Gemini 3 Pro.**
 
@@ -7,11 +8,11 @@ DashLib AI is a high-performance repository of 50+ dashboard templates designed 
 
 ## 🚀 Key Features
 
+- **PWA Ready**: Install DashLib AI directly to your desktop or mobile device for offline access.
 - **50+ Curated Templates**: Spanning Financials, Product Usage, AIOps, and more.
 - **Magic Generator**: Natural Language to React component generation using Gemini 3 Pro.
 - **Interactive Sandboxes**: Functional mock-ups (A/B Testing, Rule Builders) to test logic before exporting.
-- **Smart AI Advisor**: A specialized chat agent that suggests templates based on business outcomes (e.g., "I need to reduce churn").
-- **Tailwind & Recharts Native**: All generated code is optimized for standard modern tech stacks.
+- **Smart AI Advisor**: A specialized chat agent that suggests templates based on business outcomes.
 
 ## 🛠️ Tech Stack
 
@@ -19,25 +20,13 @@ DashLib AI is a high-performance repository of 50+ dashboard templates designed 
 - **AI Model**: [Google Gemini 3 Pro](https://ai.google.dev/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Icons**: [Lucide React](https://lucide.dev/)
-- **Charts**: [Recharts](https://recharts.org/)
+- **Offline**: Service Workers + Web Manifest
 
 ## 📦 Getting Started
 
 1. **Configure API Key**: Ensure `process.env.API_KEY` is set to your Google Gemini API key.
-2. **Browse Templates**: Use the search and category filters to find a starting point.
-3. **Interactive Test**: Use the **Live Sandbox** tab in the template modal to test interactive features.
-4. **Generate & Export**: Click **Generate React Code** to get production-ready, one-file components.
-
-## 🤖 AI Features Documentation
-
-### Magic Generator (NL to UI)
-The Magic Generator uses a sophisticated streaming prompt pipeline. It doesn't just generate HTML; it creates functional React components with:
-- Internal state management (`useState`).
-- Data visualization logic (`recharts`).
-- Responsive layouts (Tailwind breakpoints).
-
-### AI Advisor
-The advisor analyzes your `data.ts` template registry and provides architectural recommendations using Gemini 3 Flash for low-latency reasoning.
+2. **Local Dev**: Use a local server (e.g., `npx serve .`) to view the application.
+3. **PWA Installation**: Click the "Install" icon in your browser's address bar to save the app locally.
 
 ---
 © 2025 DashLib AI. Built for Senior Frontend Engineers.

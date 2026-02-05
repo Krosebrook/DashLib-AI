@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DashLib AI - Dashboard Template Library</title>
+    <meta name="theme-color" content="#4f46e5" />
+    <meta name="description" content="Enterprise-grade dashboard template library powered by Gemini 3 Pro." />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/dashboard/black/48dp.png" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -41,5 +45,35 @@
 </head>
   <body>
     <div id="root"></div>
+    <script>
+      /**
+       * Secure Service Worker Registration
+       * Resolves origin mismatch errors in sandboxed/preview environments.
+       */
+      if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+        window.addEventListener('load', () => {
+          try {
+            // Construct absolute URL to verify origin consistency
+            const swUrl = new URL('./sw.js', window.location.href);
+            
+            if (swUrl.origin === window.location.origin) {
+              navigator.serviceWorker.register(swUrl.pathname)
+                .then(reg => console.log('DashLib PWA: Service Worker Active', reg.scope))
+                .catch(err => {
+                  // Silent fail in development environments that block SWs
+                  if (err.name !== 'SecurityError') {
+                    console.error('DashLib PWA: Registration Error', err);
+                  }
+                });
+            } else {
+              console.warn('DashLib PWA: Registration skipped due to origin mismatch in sandbox environment.');
+            }
+          } catch (e) {
+            console.error('DashLib PWA: URL parsing error for SW registration', e);
+          }
+        });
+      }
+    </script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>
