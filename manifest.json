@@ -1,12 +1,25 @@
 
 {
+  "id": "dashlib-ai-v3",
   "name": "DashLib AI Dashboard Library",
   "short_name": "DashLib AI",
-  "description": "Enterprise-grade dashboard template library powered by Gemini 3 Pro.",
+  "description": "Enterprise-grade dashboard template library powered by Gemini 3 Pro and Gemini Live.",
   "start_url": "./index.html",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#f8fafc",
   "theme_color": "#4f46e5",
+  "categories": ["productivity", "developer tools", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Template Inventory",
+      "short_name": "Inventory",
+      "description": "Browse dashboard templates",
+      "url": "/index.html",
+      "icons": [{ "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/view_quilt/black/192dp.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/dashboard/black/192dp.png",
@@ -19,6 +32,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/view_quilt/black/512dp.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard Workbench"
+    },
+    {
+      "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/code/black/512dp.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Code Generator"
     }
   ]
 }

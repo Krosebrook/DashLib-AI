@@ -1,18 +1,39 @@
 
-# Testing Strategy
+# Verification & Testing Protocols
 
-## PWA Validation
-Run Lighthouse in Chrome DevTools:
-- Check "PWA" category.
-- Verify manifest is detected.
-- Verify Service Worker registers and caches.
+## 1. PWA & Offline Resilience
+- **Tool**: Chrome DevTools > Application > Service Workers.
+- **Procedure**:
+    1. Load the application to trigger SW install.
+    2. **Check Cache**: Verify `dashlib-ai-v3.2` exists and contains `index.html`, `cdn.tailwindcss.com`, and `material-design-icons` (PNGs).
+    3. **Go Offline**: Toggle "Offline" mode in DevTools Network tab.
+    4. **Reload**: 
+       - Verify the App Shell loads immediately.
+       - Verify the "Splash Screen" (if simulated by browser) uses the correct cached icon.
+    5. **Inventory Check**: Ensure templates render from the cached JS bundle.
+    6. **AI Failure State**: Verify that attempting to generate code results in a graceful "Network Disconnected" error, not a crash.
 
-## Manual Smoke Tests
-1. **Offline Mode**: Toggle "Offline" in DevTools Network tab. The template list should still render.
-2. **Installability**: Verify the "Install" prompt appears in the URL bar.
-3. **Gemini Integration**: Trigger "Magic Generator" and ensure streaming works under a valid `API_KEY`.
+## 2. Multimodal Feature Testing
 
-## QualityScore Formula
-Our CI process calculates a `QualityScore` (0-100):
-`QualityScore = (LighthousePWA * 0.4) + (OfflineReliability * 0.3) + (A11yScore * 0.2) + (PerfScore * 0.1)`
-Target Score: **> 90**.
+### A. Vision-to-Code
+1. **Input**: Drag and drop a PNG/JPG screenshot of a dashboard (< 4MB).
+2. **Expected Behavior**: The "Vision" tab displays a preview. The prompt automatically references the image.
+3. **Output**: The generated React code should reflect the *layout* (e.g., sidebar vs top nav) and *color scheme* of the input image.
+
+### B. Live Voice Architect
+1. **Permissions**: Click "Dictate". Browser should request Microphone permission.
+2. **Streaming**: Speak a sentence. The "Prompt" textarea should update with real-time transcription within 500ms.
+3. **Session Management**: Close the modal. The browser recording indicator (red dot) must turn off immediately.
+
+### C. Context Injection
+1. **Input**: Paste a raw SQL schema (`CREATE TABLE users...`).
+2. **Generation**: Ask to "Generate a user table".
+3. **Verification**: The resulting React table columns must match the SQL fields exactly (e.g., `user_id`, `created_at`).
+
+## 3. Sandbox Functional Testing
+1. **Security Rule Builder**: Ensure rules can be toggled, deleted, and that state persists correctly.
+2. **A/B Workbench**: Verify parallel model result rendering and metric normalization.
+
+## 4. AI Synthesis Benchmarking
+- **Magic Generator**: Verify that generated code contains all required imports (`recharts`, `lucide-react`) and compiles without Tailwind JIT errors.
+- **Constraint Check**: Ensure no forbidden libraries (e.g., Material UI, Styled Components) are hallucinated.

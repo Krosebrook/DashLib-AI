@@ -1,20 +1,24 @@
 
 import React, { useState, useEffect } from 'react';
-import { Template } from '../types';
-import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy, Play, Layers, Sidebar, Cpu, Github } from 'lucide-react';
-import { generateDashboardCode } from '../services/geminiService';
+import { Template, BrandConfig, AuditReport } from '../types';
+import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy, Play, Layers, Sidebar, Cpu, Github, ClipboardCheck, Zap, ShieldAlert, Award } from 'lucide-react';
+import { generateDashboardCode, generateDashboardAudit } from '../services/geminiService';
+import { openInStackBlitz } from '../utils/exportUtils';
 import SecuritySandbox from './SecuritySandbox';
 import ModelSandbox from './ModelSandbox';
 
 interface TemplateModalProps {
   template: Template;
   onClose: () => void;
+  brandConfig?: BrandConfig;
 }
 
-const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'details' | 'code' | 'sandbox'>('details');
+const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandConfig }) => {
+  const [activeTab, setActiveTab] = useState<'details' | 'code' | 'sandbox' | 'audit'>('details');
   const [generatedCode, setGeneratedCode] = useState<string>('');
+  const [auditReport, setAuditReport] = useState<AuditReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAuditing, setIsAuditing] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Focus trapping and keyboard shortcuts
@@ -29,10 +33,23 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
     if (!generatedCode) {
       setIsLoading(true);
       try {
-        const code = await generateDashboardCode(template);
+        const code = await generateDashboardCode(template, brandConfig);
         setGeneratedCode(code.replace(/```tsx|```typescript|```javascript|```/g, ""));
       } finally {
         setIsLoading(false);
+      }
+    }
+  };
+
+  const handleRunAudit = async () => {
+    setActiveTab('audit');
+    if (!auditReport) {
+      setIsAuditing(true);
+      try {
+        const report = await generateDashboardAudit(template);
+        setAuditReport(report);
+      } finally {
+        setIsAuditing(false);
       }
     }
   };
@@ -112,6 +129,14 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
               <span className="hidden md:inline">Code Generator</span>
             </button>
 
+            <button 
+              onClick={handleRunAudit}
+              className={`flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'audit' ? 'bg-white text-indigo-600 shadow-xl shadow-indigo-500/10 border border-slate-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+            >
+              <ClipboardCheck className="w-5 h-5 shrink-0" />
+              <span className="hidden md:inline">Architect's Audit</span>
+            </button>
+
             <div className="mt-auto pt-6 space-y-4">
               <div className="p-4 bg-indigo-600 rounded-2xl text-white shadow-lg hidden md:block">
                 <Cpu className="w-6 h-6 mb-3 opacity-50" />
@@ -181,18 +206,67 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
                     )}
                   </section>
                 </div>
+              </div>
+            ) : activeTab === 'audit' ? (
+              <div className="flex-1 animate-in fade-in duration-300">
+                {isAuditing ? (
+                   <div className="flex-1 flex flex-col items-center justify-center py-20">
+                    <div className="relative mb-8">
+                       <Loader2 className="w-16 h-16 animate-spin text-indigo-600 opacity-20" />
+                       <ShieldAlert className="absolute inset-0 m-auto w-8 h-8 text-indigo-600 animate-pulse" />
+                    </div>
+                    <h4 className="text-xl font-black text-slate-900 tracking-tight">Running Compliance Scan</h4>
+                    <p className="text-slate-500 mt-2 font-medium">Analyzing edge cases, security posture, and data patterns...</p>
+                  </div>
+                ) : auditReport ? (
+                  <div className="space-y-8">
+                    <div className="flex items-center justify-between p-6 bg-slate-900 rounded-[2rem] text-white shadow-xl">
+                      <div>
+                        <h3 className="text-xl font-black tracking-tight mb-1">Architect's Scorecard</h3>
+                        <p className="text-slate-400 text-sm">Enterprise Readiness Assessment</p>
+                      </div>
+                      <div className="text-center">
+                        <div className={`text-4xl font-black ${auditReport.score > 80 ? 'text-emerald-400' : 'text-amber-400'}`}>{auditReport.score}/100</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest text-slate-500 mt-1">Quality Index</div>
+                      </div>
+                    </div>
 
-                <div className="bg-slate-900 p-10 rounded-[2.5rem] text-white overflow-hidden relative group">
-                  <Layers className="absolute top-1/2 right-0 -translate-y-1/2 w-96 h-96 text-white/5 -mr-20 pointer-events-none group-hover:scale-110 transition-transform duration-1000" />
-                  <div className="relative z-10 max-w-2xl">
-                    <h3 className="text-2xl font-black mb-4">Implementation Notes</h3>
-                    <p className="text-slate-400 leading-relaxed font-medium">{template.notes}</p>
-                    <div className="mt-8 flex gap-4">
-                      <div className="px-4 py-2 bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 backdrop-blur-sm">Lucide Native</div>
-                      <div className="px-4 py-2 bg-white/10 rounded-xl text-xs font-bold uppercase tracking-widest border border-white/5 backdrop-blur-sm">Recharts Integrated</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="p-8 bg-emerald-50 rounded-[2rem] border border-emerald-100">
+                        <h4 className="flex items-center gap-2 text-sm font-black text-emerald-800 uppercase tracking-widest mb-6">
+                          <Award className="w-5 h-5" /> Detected Strengths
+                        </h4>
+                        <ul className="space-y-3">
+                          {auditReport.strengths.map((s, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm font-medium text-emerald-900">
+                              <Check className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-200">
+                        <h4 className="flex items-center gap-2 text-sm font-black text-slate-500 uppercase tracking-widest mb-6">
+                          <AlertTriangle className="w-5 h-5" /> Mitigation Required
+                        </h4>
+                        <ul className="space-y-3">
+                          {auditReport.weaknesses.map((w, i) => (
+                            <li key={i} className="flex items-start gap-3 text-sm font-medium text-slate-700">
+                              <div className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0"></div>
+                              {w}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                    
+                    <div className="p-8 border border-slate-200 rounded-[2rem] bg-white">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4">Strategic Recommendation</h4>
+                      <p className="text-slate-600 leading-relaxed font-medium">{auditReport.recommendation}</p>
                     </div>
                   </div>
-                </div>
+                ) : null}
               </div>
             ) : activeTab === 'sandbox' ? (
               <div className="flex-1 animate-in fade-in duration-300">
@@ -218,15 +292,18 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose }) => {
                        </div>
                        <div className="flex gap-2">
                         <button 
+                          onClick={() => openInStackBlitz(template.title, generatedCode)}
+                          className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 border border-indigo-100 text-indigo-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-indigo-100 transition-all"
+                        >
+                          <Zap className="w-4 h-4" />
+                          Open in StackBlitz
+                        </button>
+                        <button 
                           onClick={copyToClipboard}
                           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${copied ? 'bg-emerald-600 text-white shadow-emerald-200' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-xl shadow-slate-200 hover:shadow-indigo-100'}`}
                         >
                           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                           {copied ? 'Copied' : 'Get Code'}
-                        </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-slate-50 transition-all">
-                          <Github className="w-4 h-4" />
-                          Push to Repo
                         </button>
                        </div>
                     </div>

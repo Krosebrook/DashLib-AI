@@ -1,33 +1,72 @@
-# Contributing to DashLib AI
 
-We welcome contributions! To maintain the high quality of the library, please follow these standards.
+# 🤝 Engineering & Contribution Guidelines
 
-## 🛠 Adding a New Template
+Welcome to the DashLib AI engineering team. We adhere to strict quality standards to ensure the library remains production-grade.
 
-1. **Define the Metadata**: Add an entry to `src/data.ts`.
-2. **Metadata Requirements**:
-   - `id`: Unique kebab-case string.
-   - `category`: Must use a value from `DashboardCategory`.
-   - `purpose`: One sentence explaining the "Why".
-   - `metrics`: Array of at least 4 specific business KPIs.
-   - `notes`: Instructions for the AI code generator (e.g., "Must include a dark mode toggle").
+## 1. Development Lifecycle
 
-## 🎨 Design Standards
+### Prerequisites
+- Node.js v18+
+- A valid Google Gemini API Key
+- VS Code (recommended) with ESLint & Prettier extensions.
 
-- **Color Palette**: Stick to the `Slate` and `Indigo` Tailwind scales for consistency.
-- **Icons**: Use `Lucide-React`.
-- **Charts**: Use `Recharts`. Avoid adding external dependencies.
+### Quick Start
+```bash
+# Clone the repository
+git clone https://github.com/your-org/dashlib-ai.git
 
-## 🧪 Interactive Sandboxes
+# Install dependencies
+npm install
 
-If a template has a unique interactive logic (like a custom rule builder), set `hasInteractiveSandbox: true` and create a dedicated component in `src/components/`. 
+# Set up Environment
+export API_KEY="your_gemini_key"
 
-- **Template**: Use `SecuritySandbox.tsx` or `ModelSandbox.tsx` as a blueprint.
-- **Integration**: Register the sandbox in `TemplateModal.tsx`'s `renderSandbox` method.
+# Start Development Server
+npx serve .
+```
 
-## 📝 Pull Request Checklist
+## 2. Code Standards
 
-- [ ] Metadata added to `data.ts`.
-- [ ] TypeScript interfaces updated in `types.ts` if necessary.
-- [ ] JSDoc comments added to new components.
-- [ ] Responsive design verified.
+### TypeScript
+- **Strict Mode**: Enabled. No `any` types allowed unless explicitly justified in comments.
+- **Interfaces**: Prefer `interface` over `type` for object definitions.
+- **Naming**: PascalCase for Components, camelCase for functions/hooks.
+
+### React / JSX
+- **Functional Components**: Use `React.FC` typing.
+- **Hooks**: Custom hooks must live in `src/hooks/` and start with `use`.
+- **Accessibility**: All interactive elements must have `aria-label` or visible labels. `<img>` tags must have `alt` text.
+
+### CSS / Tailwind
+- **Ordering**: Use a consistent class ordering (Layout -> Box Model -> Typography -> Visuals).
+- **Tokens**: Use semantic color names (`indigo-600`) over arbitrary values.
+
+## 3. Pull Request Protocol
+
+1. **Branching**: Use feature branches (`feature/my-new-template`) off `main`.
+2. **Commit Messages**: Follow Conventional Commits.
+   - `feat: add new saas template`
+   - `fix: resolve mobile layout overflow`
+   - `docs: update architecture diagram`
+3. **PR Description**: Must include:
+   - "Why" (Business Value)
+   - "How" (Technical Implementation)
+   - Screenshots / GIFs of the change.
+4. **Review**: Requires 1 approval from a Senior Maintainer.
+
+## 4. Architectural Governance
+
+- **No New Dependencies**: Do not add npm packages without an ADR (Architectural Decision Record). We aim to keep the bundle size minimal.
+- **AI Consistency**: If modifying `geminiService.ts`, you must verify that prompts are deterministic enough for stable output.
+- **Mobile First**: All UI components must be responsive down to 320px width.
+
+## 5. Adding Templates
+
+To add a new dashboard template:
+1. Add metadata to `src/data.ts` adhering to the `Template` interface.
+2. If it requires custom logic, build a Sandbox component in `src/components/`.
+3. Register the sandbox in `TemplateModal.tsx`.
+4. Run the **Magic Generator** with your template description to verify the AI understands the context.
+
+---
+**Happy Coding.**

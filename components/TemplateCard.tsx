@@ -1,11 +1,13 @@
 
 import React from 'react';
 import { Template } from '../types';
-import { BarChart3, Activity, PieChart, Users, Lock, Zap, ArrowUpRight, Code2, PlayCircle } from 'lucide-react';
+import { BarChart3, Activity, PieChart, Users, Lock, Zap, ArrowUpRight, Code2, PlayCircle, Heart } from 'lucide-react';
 
 interface TemplateCardProps {
   template: Template;
   onClick: (template: Template) => void;
+  isFavorite: boolean;
+  onToggleFavorite: (e: React.MouseEvent, id: string) => void;
 }
 
 const getCategoryStyles = (category: string) => {
@@ -20,7 +22,7 @@ const getCategoryStyles = (category: string) => {
   }
 };
 
-const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick }) => {
+const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick, isFavorite, onToggleFavorite }) => {
   const styles = getCategoryStyles(template.category);
 
   return (
@@ -30,9 +32,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick }) => {
       role="article"
       aria-labelledby={`title-${template.id}`}
     >
-      {/* Visual Accent */}
-      <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-        <ArrowUpRight className="w-5 h-5 text-indigo-500" />
+      {/* Action Overlay */}
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+         <button 
+           onClick={(e) => onToggleFavorite(e, template.id)}
+           className={`p-2 rounded-full transition-all ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-transparent text-slate-300 hover:text-red-400 hover:bg-slate-50'}`}
+         >
+           <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+         </button>
       </div>
 
       <div className="flex items-center gap-2 mb-5">
@@ -44,7 +51,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onClick }) => {
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{template.refreshRate}</span>
       </div>
       
-      <h3 id={`title-${template.id}`} className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors leading-tight">
+      <h3 id={`title-${template.id}`} className="text-xl font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors leading-tight pr-8">
         {template.title}
       </h3>
       

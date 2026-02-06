@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, Send, Bot, User, X } from 'lucide-react';
 import { ChatMessage, Template } from '../types';
@@ -69,7 +70,7 @@ const AIAdvisor: React.FC<AIAdvisorProps> = ({ templates, isOpen, onClose }) => 
           </div>
           <div>
             <h3 className="font-bold text-sm">Dashboard Architect</h3>
-            <p className="text-xs text-indigo-200">Powered by Gemini 2.5</p>
+            <p className="text-xs text-indigo-200">Powered by Gemini 3</p>
           </div>
         </div>
         <button onClick={onClose} className="p-1 hover:bg-indigo-500 rounded transition-colors">

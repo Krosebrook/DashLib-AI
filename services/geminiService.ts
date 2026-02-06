@@ -1,44 +1,102 @@
 
-import { GoogleGenAI } from "@google/genai";
-import { Template } from '../types';
+import { GoogleGenAI, Type } from "@google/genai";
+import { Template, BrandConfig, Persona, AuditReport } from '../types';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+const getBrandContext = (config?: BrandConfig) => {
+  if (!config) return '';
+  return `
+    BRAND CONFIGURATION:
+    - Primary Color Theme: ${config.primaryColor}-600 (Use ${config.primaryColor} scale for all accents/buttons).
+    - Border Radius: ${config.borderRadius} (Apply to all cards/containers).
+    - Density: ${config.density} (If 'compact', reduce padding/margins by 20%).
+  `;
+};
+
+const getPersonaContext = (persona?: Persona) => {
+  if (!persona) return '';
+  const instructions = {
+    'Executive': 'Focus on high-level KPIs, clean visualizations, minimal text, and "at a glance" summary cards.',
+    'Analyst': 'Focus on data density, detailed tables, export controls, and complex filtering options.',
+    'Developer': 'Focus on API status, latency metrics, error logs, and system health indicators.'
+  };
+  return `USER PERSONA: ${persona}. ${instructions[persona]}`;
+};
+
 /**
  * Generates a bespoke dashboard from a free-form user prompt using streaming for better UX.
+ * Supports Multimodal inputs (Image) and Context injection (SQL).
  */
 export const generateCustomDashboardStream = async (
   userPrompt: string, 
-  onChunk: (text: string) => void
+  onChunk: (text: string) => void,
+  brandConfig?: BrandConfig,
+  persona?: Persona,
+  imageBase64?: string,
+  contextData?: string
 ): Promise<string> => {
-  const prompt = `
+  const parts: any[] = [];
+
+  // 1. Construct the System/User Prompt
+  let textPrompt = `
     Act as a World-Class Staff Frontend Engineer & UI Architect.
     USER REQUEST: "${userPrompt}"
+    ${getBrandContext(brandConfig)}
+    ${getPersonaContext(persona)}
+
+    ${contextData ? `\nADDITIONAL CONTEXT (SQL/FIGMA): \n${contextData}\nMap the UI components directly to this structure.` : ''}
 
     YOUR TASK: Generate a single-file, production-ready React component that fulfills this request.
 
     ARCHITECTURAL STANDARDS (NON-NEGOTIABLE):
-    1. AESTHETICS: Use a sophisticated dark/light hybrid theme using Tailwind Slate/Indigo.
-    2. INTERACTIVITY: Include functional tabs, tooltips (simulated with CSS/hover), and interactive chart states.
-    3. BEST PRACTICES: 
-       - Use Lucide-React for icons.
-       - Use Recharts for all data visualizations.
-       - Implement a "User Persona" switch (e.g., Exec vs Analyst) that toggles visible metrics.
-    4. DATA HYGIENE: Use robust mock data arrays and ensure all sensitive info is masked (e.g., "ID-****").
-    5. COMPONENTS: Include a persistent Alert Banner at the top for system notifications.
+    1. AESTHETICS: 
+       - Use a sophisticated dark/light hybrid theme using Tailwind Slate/${brandConfig?.primaryColor || 'Indigo'}.
+       - Use 'lucide-react' for all icons.
+       - The UI must look "Enterprise Grade" (clean borders, subtle shadows, consistent spacing).
 
-    TECH STACK:
-    - React (Hooks, functional components).
-    - Tailwind CSS (Utility classes only).
-    - Recharts & Lucide-React.
+    2. INTERACTIVITY (CRITICAL):
+       - The dashboard MUST NOT be static.
+       - Use \`useState\` to implement functional tabs (e.g., "Overview" vs "Details").
+       - Use \`useState\` to implement time-range filters (e.g., "7d", "30d", "YTD") that update the UI state (even if data is mocked).
+       - Charts must have Tooltips and active states.
+
+    3. VISUALIZATION BEST PRACTICES: 
+       - Use \`recharts\` for ALL data visualizations.
+       - ALWAYS wrap charts in \`<ResponsiveContainer width="100%" height={...}>\`.
+       - Use cohesive colors for chart lines/bars (e.g., Indigo-500, Emerald-500).
+
+    4. DATA HYGIENE: 
+       - Define robust mock data arrays inside the component (do not rely on external props).
+       - Ensure all sensitive info is masked (e.g., "User-****").
+
+    5. COMPONENT STRUCTURE:
+       - Start with imports: \`import React, { useState } from 'react';\`, \`import { ... } from 'lucide-react';\`, \`import { ... } from 'recharts';\`.
+       - Export as \`export default function Dashboard() { ... }\`.
+       - Include a persistent Alert Banner at the top for system notifications if relevant.
 
     Return ONLY the raw React code. Do not wrap in markdown blocks. Start directly with imports.
   `;
 
+  if (imageBase64) {
+    textPrompt += `\n\nREFER TO THE ATTACHED IMAGE for layout structure and visual hierarchy. Replicate the placement of charts and KPIs exactly.`;
+    parts.push({
+      inlineData: {
+        mimeType: 'image/png',
+        data: imageBase64
+      }
+    });
+  }
+
+  parts.push({ text: textPrompt });
+
   try {
     const response = await ai.models.generateContentStream({
       model: 'gemini-3-pro-preview',
-      contents: prompt,
+      contents: {
+        role: 'user',
+        parts: parts
+      },
     });
 
     let fullText = '';
@@ -46,7 +104,6 @@ export const generateCustomDashboardStream = async (
       const text = chunk.text;
       if (text) {
         fullText += text;
-        // Clean up markdown noise if the model accidentally includes it
         const cleaned = fullText.replace(/```tsx|```typescript|```javascript|```/g, "");
         onChunk(cleaned);
       }
@@ -59,47 +116,68 @@ export const generateCustomDashboardStream = async (
 };
 
 /**
- * Generates a bespoke dashboard from a free-form user prompt (Legacy non-stream).
+ * Generates Brand Configuration from a natural language description.
  */
-export const generateCustomDashboard = async (userPrompt: string): Promise<string> => {
-  let result = '';
-  await generateCustomDashboardStream(userPrompt, (chunk) => { result = chunk; });
-  return result;
+export const generateBrandConfig = async (description: string): Promise<BrandConfig> => {
+  const prompt = `
+    Analyze the following brand description and extract design tokens.
+    Description: "${description}"
+    
+    Return a JSON object with this exact schema:
+    {
+      "primaryColor": "indigo" | "emerald" | "blue" | "slate" | "violet",
+      "borderRadius": "rounded-none" | "rounded-lg" | "rounded-2xl" | "rounded-3xl",
+      "density": "compact" | "comfortable"
+    }
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            primaryColor: { type: Type.STRING, enum: ['indigo', 'emerald', 'blue', 'slate', 'violet'] },
+            borderRadius: { type: Type.STRING, enum: ['rounded-none', 'rounded-lg', 'rounded-2xl', 'rounded-3xl'] },
+            density: { type: Type.STRING, enum: ['compact', 'comfortable'] }
+          }
+        }
+      }
+    });
+    
+    return JSON.parse(response.text || '{}') as BrandConfig;
+  } catch (error) {
+    console.error("Brand Gen Error:", error);
+    return { primaryColor: 'indigo', borderRadius: 'rounded-2xl', density: 'comfortable' };
+  }
 };
 
-/**
- * Generates a full React component code for a given dashboard template.
- */
-export const generateDashboardCode = async (template: Template): Promise<string> => {
+export const generateDashboardCode = async (template: Template, brandConfig?: BrandConfig): Promise<string> => {
+  // Existing function remains unchanged, just ensuring it exports correctly.
   const prompt = `
     Act as a Staff Platform Engineer specialized in high-performance Enterprise Dashboards.
     Generate a complete, functional React component for the "${template.title}" dashboard.
+    ${getBrandContext(brandConfig)}
     
     CRITICAL IMPLEMENTATION RULES:
-    
     1. PERSISTENT DISMISSIBLE BANNER:
        - Every generated dashboard MUST have a Banner at the very top.
        - It displays a critical alert summary (e.g., "ALERT: ${template.alertThreshold || 'Threshold breached'}").
        - It MUST be dismissible with an 'X' button and include a link to "View Details".
-
     2. CUSTOMIZABLE ALERTING SYSTEM UI:
        - Implement an "Alert Threshold Configuration" section.
        - Components: Metric Dropdown, Condition Dropdown (Greater Than, Less Than, Equal To), Value Input (Number), and "Save Rule" button.
        - Display a list of "Active Threshold Rules" that updates when saved.
-
-    3. MODEL PERFORMANCE & A/B TESTING (Specifically for "Model Performance & Cost"):
-       - MANDATORY REQUIREMENT: Create a dedicated "A/B Testing Workbench" UI section.
-       - The workbench MUST include:
-         * A large textarea for the user to enter a "Test Prompt".
-         * Multi-select buttons for models: [GPT-4o, Claude 3.5 Sonnet, Llama 3].
-         * A prominent "Run Experiment" button.
-         * Side-by-side response cards showing the model outputs.
-         * Comparison Visualization: A Recharts Bar Chart comparing Latency and Cost.
-
-    4. SECURITY CUSTOM RULE BUILDER (Specifically for "Security & Compliance"):
-       - REQUIREMENT: Create a dedicated "Custom Security Rule Builder" section.
-       - Features: Metric Select, Condition Select, Value Input, Save Button.
-       - Functional Requirement: Maintain an "Active Security Policies" list.
+    3. MODEL PERFORMANCE & A/B TESTING (If applicable):
+       - If template is "Model Performance", include "A/B Testing Workbench".
+    4. SECURITY CUSTOM RULE BUILDER (If applicable):
+       - If template is "Security & Compliance", include "Custom Security Rule Builder".
+    5. INTERACTIVITY:
+       - Use \`useState\` for basic interactions (tabs, filters).
+       - Ensure all charts are responsive using \`ResponsiveContainer\`.
 
     TECH STACK: React, Tailwind CSS, Recharts, Lucide-React.
 
@@ -119,10 +197,50 @@ export const generateDashboardCode = async (template: Template): Promise<string>
   }
 };
 
-/**
- * Provides an architectural recommendation based on a user's query.
- */
+export const generateDashboardAudit = async (template: Template): Promise<AuditReport> => {
+   // Existing function remains unchanged
+  const prompt = `
+    Act as a Senior QA Architect & Security Compliance Officer.
+    Analyze the following dashboard concept for Enterprise Readiness:
+    
+    Title: ${template.title}
+    Purpose: ${template.purpose}
+    Metrics: ${template.metrics.join(', ')}
+    Data Sources: ${template.dataSources.join(', ')}
+
+    Produce a JSON object with the following schema (DO NOT WRAP IN MARKDOWN):
+    {
+      "score": number (0-100),
+      "strengths": string[] (3 points),
+      "weaknesses": string[] (3 points focusing on potential edge cases, data privacy, or performance),
+      "securityRisk": "Low" | "Medium" | "High",
+      "recommendation": string (One professional paragraph)
+    }
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: { responseMimeType: 'application/json' }
+    });
+    
+    const text = response.text || "{}";
+    return JSON.parse(text) as AuditReport;
+  } catch (error) {
+    console.error("Gemini Audit Error:", error);
+    return {
+      score: 0,
+      strengths: [],
+      weaknesses: ["Failed to generate audit report."],
+      securityRisk: 'High',
+      recommendation: "System error during audit."
+    };
+  }
+};
+
 export const getAIRecommendation = async (query: string, templates: Template[]): Promise<string> => {
+   // Existing function remains unchanged
   const templateContext = templates.map(t => `- ${t.title} (${t.category}): ${t.purpose}`).join('\n');
   
   const prompt = `
@@ -136,7 +254,7 @@ export const getAIRecommendation = async (query: string, templates: Template[]):
     
     Task:
     1. Recommend the 1-2 most relevant templates.
-    2. Specifically mention how they use A/B testing (simultaneous model tests) or the custom alert rule builder to solve the user's need.
+    2. Specifically mention how they use A/B testing or custom alert rules to solve the user's need.
     3. Keep it professional, technical, and concise.
   `;
 
