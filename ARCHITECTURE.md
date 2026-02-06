@@ -1,7 +1,7 @@
 
 # 🏛️ System Architecture & Design
 
-**DashLib AI** is a client-side first, AI-augmented Single Page Application (SPA) designed for high performance, offline capability, and enterprise-grade code synthesis. v3.2 introduces real-time multimodal capabilities.
+**DashLib AI** is a client-side first, AI-augmented Single Page Application (SPA) designed for high performance, offline capability, and enterprise-grade code synthesis. v3.3 introduces real-time multimodal capabilities and advanced simulation workbenches.
 
 ---
 
@@ -27,7 +27,12 @@ graph TD
         State[State Management]
         Sandboxes[Interactive Sandboxes]
         Generator[Magic Generator Engine]
-        SW[Service Worker v3.2]
+        SW[Service Worker v3.3]
+        
+        subgraph "Simulation Layer"
+          A/B[A/B Model Benchmark]
+          SecEngine[Security Policy Engine]
+        end
     end
 ```
 
@@ -39,40 +44,17 @@ The brain of the application. It manages the context window, prompt injection, a
 - **Multimodal**: Handles Text, Image (Base64), and Context inputs.
 - **Constraint Injection**: Hard constraints (Tailwind, Lucide, Recharts) are prepended to every prompt.
 
-### B. Audio Processing Module (`audioUtils.ts`)
-Handles the bidirectional audio stream for Voice Architect.
-- **Input**: Downsamples microphone input to 16kHz PCM (16-bit) for the Gemini Live API.
-- **Output**: Decodes raw PCM chunks from the model into an `AudioBuffer` for low-latency playback (optional feedback).
-- **Transport**: Uses WebSockets via `@google/genai` Live client.
+### B. Simulation Layer (Sandboxes)
+Isolated environments to mock backend logic without a server.
+- **A/B Testing Workbench**: Simulates parallel API calls to multiple LLMs, introducing artificial latency and cost metrics based on real-world model characteristics (e.g., Llama 3 is faster/cheaper than GPT-4).
+- **Security Policy Engine**: A client-side rule evaluation engine that persists user-defined thresholds (e.g., `Login Failures > 5`) and simulates alert triggering.
 
 ### C. State Management
 We utilize a hybrid persistence model:
 - **React State**: Volatile UI state (modals, tabs).
 - **`usePersistentState` Hook**: A wrapper around `localStorage` with JSON serialization/deserialization safety.
 
-## 3. Data Flow Diagram (Multimodal Pipeline)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant AudioNode
-    participant GeneratorUI
-    participant GeminiAPI
-    participant CodeParser
-
-    User->>GeneratorUI: Clicks "Dictate"
-    GeneratorUI->>AudioNode: Open Mic Stream (16kHz)
-    AudioNode->>GeminiAPI: Stream PCM Chunks (WebSocket)
-    GeminiAPI-->>GeneratorUI: Real-time Transcription
-    User->>GeneratorUI: Clicks "Generate"
-    GeneratorUI->>GeminiAPI: Send Prompt + History + Brand Context
-    GeminiAPI-->>CodeParser: Chunked Text Response
-    CodeParser->>GeneratorUI: Real-time Syntax Highlighting
-    CodeParser->>CodeParser: Strip Markdown & Sanitize
-    GeneratorUI->>User: Display Rendered Code
-```
-
-## 4. Architectural Decision Records (ADRs)
+## 3. Architectural Decision Records (ADRs)
 
 ### ADR-001: Client-Side AI Calls
 - **Context**: Should we proxy AI calls through a backend?
@@ -97,7 +79,7 @@ sequenceDiagram
 - **Decision**: Service Worker intercepts all `navigate` requests and serves the cached `index.html`.
 - **Reasoning**: This "Navigation Fallback" ensures that refreshing the page on a sub-route (e.g., `/?template=1`) works offline without needing server-side rewrite rules. We strictly separate the Shell (cached on install) from Content (cached via Stale-While-Revalidate).
 
-## 5. Security Posture
+## 4. Security Posture
 
 - **Input Sanitization**: All AI outputs are treated as untrusted.
 - **Microphone Permissions**: Requested only upon user action (Clicking "Dictate").

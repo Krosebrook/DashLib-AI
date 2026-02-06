@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'dashlib-ai-v3.2';
+const CACHE_NAME = 'dashlib-ai-v3.3';
 
 // Core assets required for the app shell and offline splash
 const STATIC_ASSETS = [

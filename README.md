@@ -2,7 +2,7 @@
 # 📊 DashLib AI
 
 [![Status](https://img.shields.io/badge/status-live-success)]()
-[![Release](https://img.shields.io/badge/release-v3.2_PWA_Optimized-purple)]()
+[![Release](https://img.shields.io/badge/release-v3.3_Testing_Engine-purple)]()
 [![AI Engine](https://img.shields.io/badge/Gemini-Pro_Vision_%26_Live-blue)]()
 [![License](https://img.shields.io/badge/license-MIT-grey)]()
 
@@ -12,16 +12,19 @@ DashLib AI is an intelligent architectural tool designed for Senior Frontend Eng
 
 ---
 
-## 🚀 New in v3.2: Multimodal Architect
+## 🚀 New in v3.3: Ops & Governance Engines
 
-### 👁️ **Vision-to-Code**
-Stop writing CSS descriptions. Drag and drop a screenshot of an existing dashboard or a whiteboard sketch. DashLib analyzes the visual hierarchy, color palette, and data density to replicate the interface in React + Tailwind code with pixel-perfect accuracy.
+### 🧪 **A/B Testing Workbench**
+A fully interactive environment to benchmark Large Language Models (LLMs).
+- **Multi-Model Support**: Compare GPT-4o, Claude 3.5, and Llama 3 in parallel.
+- **Metric Comparison**: Visualize Latency (p95), Cost per Request, and Token Efficiency side-by-side.
+- **Hallucination Detection**: Automated integrity scoring for model outputs.
 
-### 🎙️ **Live Voice Architect**
-Speak your requirements in real-time. Using the low-latency Gemini Live API, you can dictate complex logic ("Change the charts to area graphs and add a 7-day moving average filter") and see the code evolve instantly.
-
-### 🧠 **Context Injection**
-Paste raw SQL Schemas (`CREATE TABLE...`) or Figma JSON node data. The generator maps your specific data structure to the UI components, ensuring type safety in the generated mocks.
+### 🛡️ **Security Policy Builder**
+A "Zero-Trust" rule engine for defining dashboard thresholds.
+- **Custom Rules**: Define logic like `IF Failed Logins > 10 THEN Trigger Alert`.
+- **Persistence**: Rules are saved locally to `localStorage`, allowing you to test state persistence across sessions.
+- **Visual Feedback**: Real-time status indicators for policy enforcement.
 
 ---
 
@@ -30,7 +33,7 @@ Paste raw SQL Schemas (`CREATE TABLE...`) or Figma JSON node data. The generator
 DashLib AI is a fully installable **Progressive Web App (PWA)** designed for zero-latency access.
 
 - **App Shell Architecture**: The core UI (`index.html`, React bundles) is cached immediately, allowing the app to boot instantly even without a network.
-- **Offline Inventory**: Browse templates, view specifications, and check audit reports while offline.
+- **Offline Inventory**: Browse 50+ templates, view specifications, and check audit reports while offline.
 - **Resilient Fallback**: Navigation requests are intercepted to serve the App Shell, ensuring deep links work offline.
 - **Installable**: Add to Dock (macOS), Taskbar (Windows), or Home Screen (iOS/Android) for a native app experience.
 

@@ -18,6 +18,13 @@
       "description": "Browse dashboard templates",
       "url": "/index.html",
       "icons": [{ "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/view_quilt/black/192dp.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Magic Generator",
+      "short_name": "Generate",
+      "description": "Create custom dashboards",
+      "url": "/index.html",
+      "icons": [{ "src": "https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/code/black/192dp.png", "sizes": "192x192" }]
     }
   ],
   "icons": [

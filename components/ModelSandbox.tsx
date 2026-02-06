@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Zap, Play, CheckCircle2, AlertTriangle, Clock, DollarSign, BrainCircuit, BarChart2, MessageSquareText, Layers, Trash2 } from 'lucide-react';
+import { Zap, Play, CheckCircle2, AlertTriangle, Clock, DollarSign, BrainCircuit, BarChart2, MessageSquareText, Layers, Trash2, Check } from 'lucide-react';
 import { usePersistentState } from '../hooks/usePersistentState';
 
 interface TestResult {
@@ -12,56 +12,70 @@ interface TestResult {
   tokens: number;
 }
 
+const AVAILABLE_MODELS = [
+  { id: 'GPT-4o', label: 'GPT-4o', color: 'bg-indigo-500' },
+  { id: 'Claude 3.5 Sonnet', label: 'Claude 3.5', color: 'bg-orange-500' },
+  { id: 'Llama 3 (70B)', label: 'Llama 3', color: 'bg-blue-500' }
+];
+
+const MOCK_RESPONSES: Record<string, Omit<TestResult, 'model'>> = {
+  'GPT-4o': {
+    response: '1. Scale: Physical steam power vs mental compute. 2. Workforce: Factory labor vs knowledge work. 3. Pacing: Decades of rollout vs months of deployment.',
+    latency: 420,
+    cost: 0.0042,
+    hallucination: 0.2,
+    tokens: 145
+  },
+  'Claude 3.5 Sonnet': {
+    response: '1. Resource shift: From coal/steel to GPUs/data. 2. Urbanization: Shift to cities vs shift to decentralized networks. 3. Safety: Mechanical safeguards vs alignment research.',
+    latency: 890,
+    cost: 0.0084,
+    hallucination: 0.1,
+    tokens: 182
+  },
+  'Llama 3 (70B)': {
+    response: '1. Standardization: Assembly lines vs standardized APIs. 2. Economics: Capital-intensive production vs marginal-cost distribution. 3. Impact: Physical mobility vs cognitive augmentation.',
+    latency: 1250,
+    cost: 0.0002,
+    hallucination: 0.5,
+    tokens: 210
+  }
+};
+
 const ModelSandbox: React.FC = () => {
   const [prompt, setPrompt] = useState('Compare the industrial revolution with the rise of AI in 3 points.');
+  const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4o', 'Claude 3.5 Sonnet']);
   const [isTesting, setIsTesting] = useState(false);
   
   // Persist test results
   const [results, setResults] = usePersistentState<TestResult[]>('dashlib-model-results', []);
 
+  const toggleModel = (modelId: string) => {
+    setSelectedModels(prev => 
+      prev.includes(modelId) ? prev.filter(m => m !== modelId) : [...prev, modelId]
+    );
+  };
+
   const runTest = () => {
+    if (selectedModels.length === 0) return;
     setIsTesting(true);
-    // Note: In a real implementation, we might want to append to history rather than replace, 
-    // but for this specific "Experiment Workbench" UI, replacing the current view is often desired 
-    // to declutter. However, to show value of persistence, let's allow appending or just persist the last run.
-    // For now, we follow the existing behavior (replace) but it persists across reloads.
     
-    // Simulating advanced parallel model inference
+    // Simulating advanced parallel model inference with network jitter
     setTimeout(() => {
-      setResults([
-        {
-          model: 'GPT-4o',
-          response: '1. Scale: Physical steam power vs mental compute. 2. Workforce: Factory labor vs knowledge work. 3. Pacing: Decades of rollout vs months of deployment.',
-          latency: 420,
-          cost: 0.0042,
-          hallucination: 0.2,
-          tokens: 145
-        },
-        {
-          model: 'Claude 3.5 Sonnet',
-          response: '1. Resource shift: From coal/steel to GPUs/data. 2. Urbanization: Shift to cities vs shift to decentralized networks. 3. Safety: Mechanical safeguards vs alignment research.',
-          latency: 890,
-          cost: 0.0084,
-          hallucination: 0.1,
-          tokens: 182
-        },
-        {
-          model: 'Llama 3 (70B)',
-          response: '1. Standardization: Assembly lines vs standardized APIs. 2. Economics: Capital-intensive production vs marginal-cost distribution. 3. Impact: Physical mobility vs cognitive augmentation.',
-          latency: 1250,
-          cost: 0.0002,
-          hallucination: 0.5,
-          tokens: 210
-        }
-      ]);
+      const newResults: TestResult[] = selectedModels.map(modelId => ({
+        model: modelId,
+        ...MOCK_RESPONSES[modelId],
+        // Add slight jitter to metrics to make it feel real
+        latency: Math.floor(MOCK_RESPONSES[modelId].latency * (0.9 + Math.random() * 0.2)),
+      }));
+      
+      setResults(newResults);
       setIsTesting(false);
-    }, 2000);
+    }, 1500 + Math.random() * 1000);
   };
 
   const clearHistory = () => {
-    if (confirm('Clear all test results?')) {
-      setResults([]);
-    }
+    setResults([]);
   };
 
   return (
@@ -78,12 +92,25 @@ const ModelSandbox: React.FC = () => {
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Simultaneous Model Benchmarking</p>
             </div>
           </div>
-          <div className="hidden md:flex gap-2">
-            {['GPT-4o', 'Claude 3.5', 'Llama 3'].map(m => (
-              <div key={m} className="px-3 py-1 bg-indigo-50 border border-indigo-100 rounded-full text-[9px] font-black text-indigo-600 uppercase tracking-widest">
-                {m}
-              </div>
-            ))}
+          
+          <div className="flex gap-2">
+            {AVAILABLE_MODELS.map(m => {
+              const isSelected = selectedModels.includes(m.id);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => toggleModel(m.id)}
+                  className={`px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all flex items-center gap-2 ${
+                    isSelected 
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' 
+                      : 'bg-white text-slate-400 border-slate-200 hover:border-slate-300'
+                  }`}
+                >
+                  {isSelected && <Check className="w-3 h-3" />}
+                  {m.label}
+                </button>
+              );
+            })}
           </div>
         </div>
         
@@ -112,7 +139,9 @@ const ModelSandbox: React.FC = () => {
              <div className="h-10 w-px bg-slate-100 hidden md:block"></div>
              <div className="flex items-center gap-3">
                <Layers className="w-4 h-4 text-slate-400" />
-               <span className="text-xs font-bold text-slate-500">Cross-Inference: <span className="text-indigo-600 font-black">ACTIVE</span></span>
+               <span className="text-xs font-bold text-slate-500">
+                 Active Threads: <span className="text-indigo-600 font-black">{selectedModels.length}</span>
+               </span>
              </div>
           </div>
           
@@ -128,7 +157,7 @@ const ModelSandbox: React.FC = () => {
             )}
             <button 
               onClick={runTest}
-              disabled={isTesting || !prompt.trim()}
+              disabled={isTesting || !prompt.trim() || selectedModels.length === 0}
               className="flex-1 md:flex-none flex items-center justify-center gap-3 px-10 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold hover:bg-indigo-600 transition-all disabled:opacity-50 active:scale-95 shadow-xl shadow-slate-200 group"
             >
               {isTesting ? (
@@ -139,7 +168,7 @@ const ModelSandbox: React.FC = () => {
               ) : (
                 <>
                   <Play className="w-5 h-5 group-hover:scale-110 transition-transform fill-current" />
-                  Parallel Run
+                  Run {selectedModels.length} Models
                 </>
               )}
             </button>
@@ -207,20 +236,6 @@ const ModelSandbox: React.FC = () => {
                   <h3 className="text-2xl font-black text-white tracking-tight">Analytics Matrix</h3>
                   <p className="text-sm font-bold text-slate-500 mt-1 uppercase tracking-widest">Normalized Performance Scoring</p>
                 </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-indigo-500"></div>
-                    <span className="text-xs font-bold text-slate-400">GPT-4o</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-purple-500"></div>
-                    <span className="text-xs font-bold text-slate-400">Claude</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded bg-emerald-500"></div>
-                    <span className="text-xs font-bold text-slate-400">Llama</span>
-                  </div>
-                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -238,13 +253,13 @@ const ModelSandbox: React.FC = () => {
                       {results.map((res, idx) => {
                         const val = (res as any)[metric.field] * (metric.multiplier || 1);
                         const pct = Math.min((val / metric.max) * 100, 100);
-                        const colors = ['bg-indigo-500', 'bg-purple-500', 'bg-emerald-500'];
+                        const modelConfig = AVAILABLE_MODELS.find(m => m.id === res.model) || AVAILABLE_MODELS[0];
                         return (
                           <div key={res.model} className="flex items-center gap-4 group">
                             <span className="text-[10px] font-black text-slate-400 w-24 truncate">{res.model}</span>
                             <div className="flex-1 h-3 bg-white/5 rounded-full overflow-hidden border border-white/5">
                               <div 
-                                className={`h-full rounded-full transition-all duration-1000 ${colors[idx]}`}
+                                className={`h-full rounded-full transition-all duration-1000 ${modelConfig.color}`}
                                 style={{ width: `${pct}%` }}
                               ></div>
                             </div>
