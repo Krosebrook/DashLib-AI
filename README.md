@@ -1,106 +1,51 @@
 
 # 📊 DashLib AI
 
-[![Status](https://img.shields.io/badge/status-live-success)]()
-[![Release](https://img.shields.io/badge/release-v3.3_Testing_Engine-purple)]()
-[![AI Engine](https://img.shields.io/badge/Gemini-Pro_Vision_%26_Live-blue)]()
-[![License](https://img.shields.io/badge/license-MIT-grey)]()
+[![Release](https://img.shields.io/badge/release-v3.6_Portable_Apps-purple)]()
+[![PWA](https://img.shields.io/badge/PWA-Enhanced_v3.6-success)]()
+[![AI Engine](https://img.shields.io/badge/Gemini-3_Pro_Engine-blue)]()
 
 **The Enterprise-Grade Dashboard Synthesis Engine.**
 
-DashLib AI is an intelligent architectural tool designed for Senior Frontend Engineers. It leverages **Google Gemini 3 Pro** and the **Gemini Live API** to synthesize, audit, and deploy production-ready dashboard code based on complex business requirements via Text, Voice, or Image inputs.
+DashLib AI is an intelligent architectural tool designed for Senior Frontend Engineers. It leverages **Google Gemini 3 Pro** and the **Gemini Live API** to synthesize, audit, and deploy production-ready dashboard code with zero boilerplate.
 
 ---
 
-## 🚀 New in v3.3: Ops & Governance Engines
+## 🚀 New in v3.6: Zero-Install Micro-Apps
 
-### 🧪 **A/B Testing Workbench**
-A fully interactive environment to benchmark Large Language Models (LLMs).
-- **Multi-Model Support**: Compare GPT-4o, Claude 3.5, and Llama 3 in parallel.
-- **Metric Comparison**: Visualize Latency (p95), Cost per Request, and Token Efficiency side-by-side.
-- **Hallucination Detection**: Automated integrity scoring for model outputs.
+### 📦 **Portable Micro-Apps (PMA)**
+DashLib now supports **Single-File Standalone Distribution**.
+- **Instant Deployment**: Download a fully functional dashboard as a single `.html` file.
+- **Zero Install**: No `npm install`, no `node_modules`, no build pipeline. 
+- **Universal Compatibility**: Works in any modern browser using native ES Modules and `importmap`.
+- **Embeddable**: Drop the generated HTML into any legacy portal or CMS as an `<iframe>` widget.
 
-### 🛡️ **Security Policy Builder**
-A "Zero-Trust" rule engine for defining dashboard thresholds.
-- **Custom Rules**: Define logic like `IF Failed Logins > 10 THEN Trigger Alert`.
-- **Persistence**: Rules are saved locally to `localStorage`, allowing you to test state persistence across sessions.
-- **Visual Feedback**: Real-time status indicators for policy enforcement.
-
----
-
-## 📱 PWA & Offline Capabilities
-
-DashLib AI is a fully installable **Progressive Web App (PWA)** designed for zero-latency access.
-
-- **App Shell Architecture**: The core UI (`index.html`, React bundles) is cached immediately, allowing the app to boot instantly even without a network.
-- **Offline Inventory**: Browse 50+ templates, view specifications, and check audit reports while offline.
-- **Resilient Fallback**: Navigation requests are intercepted to serve the App Shell, ensuring deep links work offline.
-- **Installable**: Add to Dock (macOS), Taskbar (Windows), or Home Screen (iOS/Android) for a native app experience.
+### 🛡️ **PWA Engine v3.6**
+- **Optimized Caching**: Refined Stale-While-Revalidate strategy for faster boot times.
+- **Offline Resilience**: Improved navigation fallback for deep-linking templates while disconnected.
+- **Deep OS Integration**: Desktop/Mobile shortcuts for "Magic Generator" and "Inventory Hub".
 
 ---
 
-## 🌟 Core Capabilities
+## 🌟 Core Pillars
 
 ### 1. **Neural Code Synthesis**
-Transform high-level requirements into fully typed, accessible React + Tailwind + Recharts code in seconds. Now supports **Constraint Injection** for strict design system adherence.
+Transform natural language, sketches, or database schemas into production-ready React + Tailwind + Recharts code.
 
-### 2. **Interactive Workbenches**
-Don't just view static images. Interact with:
-- **Security Logic Sandboxes**: Define and test governance rules.
-- **A/B Testing Simulators**: Visualize model performance metrics side-by-side.
+### 2. **Governance & A/B Hub**
+Integrated workbenches for benchmarking LLM models (Latency, Cost, Quality) and defining custom security thresholds.
 
 ### 3. **Architectural Audits**
-Every template includes an AI-driven "Architect's Audit" that scores the concept on Enterprise Readiness, identifying edge cases, security risks, and accessibility gaps.
-
-### 4. **Brand Auto-Tune**
-Input a natural language description of your brand (e.g., "Cyberpunk fintech with neon accents"), and the AI extracts and applies the correct Design Tokens (Color, Radius, Density) globally.
+AI-driven evaluation of UI architecture, accessibility, and enterprise security posture.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Environmental Setup
-DashLib is a client-side PWA. It requires no backend, but needs an API key for inference.
-
-```bash
-# Export your Gemini API Key (Must support Gemini 1.5/3 Pro & Live API)
-export API_KEY="AIzaSy..."
-```
-
-### 2. Launch
-```bash
-# Install dependencies
-npm install
-
-# Start local server
-npx serve .
-```
-
-### 3. Usage Flow
-1. **Browse Inventory**: Filter 50+ templates by SaaS, Financial, or GovOps categories.
-2. **Open Workbench**: Click a template to view specs, audit reports, and live sandboxes.
-3. **Generate**: Use the **Magic Generator** to synthesize the codebase using **Text, Voice, or Vision**.
-4. **Export**: One-click deploy to StackBlitz or copy to clipboard.
-
----
-
-## 📚 Documentation Index
-
-- [**Architecture & Design**](./ARCHITECTURE.md): System context, live audio pipeline, and ADRs.
-- [**Product Roadmap**](./ROADMAP.md): The strategic vision for the next 25 features.
-- [**Contributing Standards**](./CONTRIBUTING.md): Engineering guidelines and PR protocols.
-- [**Security Policy**](./SECURITY.md): Threat models and compliance.
-- [**PWA & Offline**](./PWA.md): Service Worker strategies.
-
----
-
-## 🏆 Powered By
-
-- **React 19**: Concurrent rendering and latest hooks.
-- **Google Gemini 3 Pro**: State-of-the-art reasoning and code generation.
-- **Gemini Live API**: Real-time multimodal WebSocket streaming.
-- **Tailwind CSS**: Utility-first styling engine.
-- **Recharts**: Composable visualization library.
+1. **Environmental Setup**: Ensure `API_KEY` is available in your environment.
+2. **Browse Inventory**: Select from 50+ enterprise blueprints.
+3. **Workbench**: Audit the concept and generate code.
+4. **Export**: Click **"Download Portable App"** for immediate, dependency-free usage.
 
 ---
 © 2025 DashLib AI. Engineered for Scale.

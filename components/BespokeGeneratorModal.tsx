@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Sparkles, Code, Loader2, Copy, Wand2, Terminal, Lightbulb, Check, Zap, Users, Trash2, Image as ImageIcon, Database, Mic, MicOff, UploadCloud } from 'lucide-react';
+import { X, Sparkles, Code, Loader2, Copy, Wand2, Terminal, Lightbulb, Check, Zap, Users, Trash2, Image as ImageIcon, Database, Mic, MicOff, UploadCloud, Download } from 'lucide-react';
 import { generateCustomDashboardStream } from '../services/geminiService';
 import { usePersistentState } from '../hooks/usePersistentState';
-import { openInStackBlitz } from '../utils/exportUtils';
+import { openInStackBlitz, downloadStandaloneHTML } from '../utils/exportUtils';
 import { createPcmBlob, decodeAudioData } from '../utils/audioUtils';
 import { BrandConfig, Persona } from '../types';
 import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
@@ -100,6 +100,10 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
     }
   };
 
+  const handleDownload = () => {
+    downloadStandaloneHTML("Custom AI Dashboard", generatedCode);
+  };
+
   // --- Gemini Live Audio Implementation ---
   const startVoiceSession = async () => {
     try {
@@ -137,7 +141,6 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
              const audioData = msg.serverContent?.modelTurn?.parts?.[0]?.inlineData?.data;
              if (audioData) {
                // Playback logic could go here if we want the model to "talk back"
-               // For now, we are using this for Dictation/Context Injection
              }
           },
           onclose: () => setIsVoiceActive(false),
@@ -358,9 +361,6 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
                                 </>
                             )}
                         </div>
-                        <p className="text-xs text-slate-500 leading-relaxed">
-                            <span className="font-bold text-indigo-600">Tip:</span> Upload a whiteboard sketch or an existing dashboard screenshot. Gemini Vision will analyze the visual hierarchy and generate matching React components.
-                        </p>
                     </div>
                 )}
 
@@ -376,9 +376,6 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
                             value={contextData}
                             onChange={(e) => setContextData(e.target.value)}
                         />
-                        <p className="text-xs text-slate-500 leading-relaxed">
-                            Provide raw SQL or Figma JSON. The generator will map UI components to your specific data structure.
-                        </p>
                     </div>
                 )}
                 
@@ -424,11 +421,6 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
                   <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-indigo-400 animate-pulse" />
                 </div>
                 <p className="mt-6 font-bold text-white tracking-tight">Synthesizing Architecture...</p>
-                <div className="flex gap-1 mt-4">
-                  {[1,2,3,4].map(i => (
-                    <div key={i} className={`w-1 h-1 rounded-full bg-indigo-500 animate-bounce delay-${i}00`}></div>
-                  ))}
-                </div>
               </div>
             )}
 
@@ -445,6 +437,13 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
                     <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">bespoke_dashboard.tsx</span>
                   </div>
                   <div className="flex gap-2">
+                    <button 
+                       onClick={handleDownload}
+                       className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-emerald-500 transition-all shadow-lg"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      Portable App
+                    </button>
                     <button 
                        onClick={() => openInStackBlitz('Bespoke Dashboard', generatedCode)}
                        className="flex items-center gap-2 px-4 py-2 bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-500/20 transition-all"
@@ -470,11 +469,6 @@ const BespokeGeneratorModal: React.FC<BespokeGeneratorModalProps> = ({ isOpen, o
                    >
                     {generatedCode}
                   </pre>
-                  {isGenerating && (
-                    <div className="absolute bottom-4 right-8 bg-indigo-600/20 text-indigo-400 px-3 py-1 rounded-full text-[10px] font-bold animate-pulse border border-indigo-500/20 backdrop-blur-md">
-                      AI is streaming...
-                    </div>
-                  )}
                 </div>
               </div>
             )}

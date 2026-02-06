@@ -1,31 +1,23 @@
 
-# Observability & Metrics Strategy
+# Observability & Metrics Strategy (v3.6)
 
-## 1. System Health & PWA Lifecycle
-- **Service Worker Activation**: Monitor console for `[SW] Active` logs to verify successful registration.
-- **Cache Integrity**: Use DevTools to ensure `dashlib-ai-v3.3` is serving static assets (Status 200 (from service worker)).
-- **Cache Quota**: Monitor `navigator.storage.estimate()` to ensure the app stays within browser limits (typically < 50MB for this app).
-- **Audio Context**: Track `AudioContext` state (`running` vs `closed`) to prevent memory leaks during voice sessions.
+## 1. Export Observability
+- **PMA Download Volume**: Tracking frequency of standalone HTML exports.
+- **StackBlitz Conversion**: Monitoring developer transition from preview to IDE.
+- **Code Generation Success Rate**: Ratio of valid vs malformed React component outputs from the Gemini 3 engine.
 
-## 2. Sandbox Engagement Metrics
-- **Experiment Saturation**: Track the number of models selected per A/B run. (e.g., Average 2.4 models per run).
-- **Rule Complexity**: Monitor the number of active Security Rules stored in LocalStorage. High counts (>10) might indicate a need for bulk management features.
+## 2. PWA & Caching Health
+- **Cache Hit Ratio (v3.6)**: Percentage of asset requests served from `CACHE_NAME`.
+- **Installation Rate**: Users opting to "Install App" to desktop/mobile.
+- **SW Lifecycle Events**: Monitoring frequency of `install`/`activate` errors in production environments.
 
-## 3. AI Performance Metrics
+## 3. Governance Rule Analytics
+- **Rule Cardinality**: Average number of custom policies per user session.
+- **Alert Trigger Frequency**: Monitoring simulated alert violations to optimize threshold UX.
 
-### A. Inference Latency
-- **Time to First Token (TTFT)**: Tracked in `geminiService.ts` stream loop. Target: < 1.5s.
-- **Total Generation Time**: Duration from request start to final code block closure. Target: < 15s.
+## 4. Model Benchmarking Performance
+- **Inference Latency**: p95 timing for A/B testing runs.
+- **Drift Detection**: Rate of "Performance Drift" alerts triggered during model comparisons.
 
-### B. Live API Metrics
-- **Connection Stability**: Monitor WebSocket `onclose` events that occur without user initiation (indicates network jitter).
-- **Transcription Lag**: Perceived delay between user speech and text appearance.
-- **PCM Buffer Health**: Ensure audio chunks are sent at 16kHz without underruns.
-
-## 4. Alerting Observability
-- **Triggered Alerts**: Displayed in the `AlertBanner`. 
-- **Traceability**: Every alert includes a `templateId` deep-link.
-
-## 5. Usage Analytics (Client-Side)
-- **Feature Adoption**: Track clicks on "Vision Tab" vs "Text Prompt" (using local analytics counters).
-- **Export Rate**: Percentage of generations that result in a "Copy to Clipboard" or "StackBlitz" action.
+---
+© 2025 DashLib AI Observability Hub.
