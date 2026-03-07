@@ -78,7 +78,7 @@ const App: React.FC = () => {
   // Global Alert Handler passed to children
   const addSystemAlert = (templateId: string, message: string, severity: 'critical' | 'warning' | 'info') => {
     const newAlert: SystemAlert = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       templateId,
       message,
       severity,

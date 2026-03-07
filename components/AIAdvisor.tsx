@@ -45,17 +45,28 @@ const AIAdvisor: React.FC<AIAdvisorProps> = ({ templates, isOpen, onClose }) => 
     setInput('');
     setIsTyping(true);
 
-    const aiResponseText = await getAIRecommendation(userMsg.content, templates);
+    try {
+      const aiResponseText = await getAIRecommendation(userMsg.content, templates);
 
-    const aiMsg: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      role: 'model',
-      content: aiResponseText,
-      timestamp: Date.now()
-    };
+      const aiMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        content: aiResponseText,
+        timestamp: Date.now()
+      };
 
-    setMessages(prev => [...prev, aiMsg]);
-    setIsTyping(false);
+      setMessages(prev => [...prev, aiMsg]);
+    } catch {
+      const errMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: 'model',
+        content: "Sorry, I'm having trouble connecting to the AI advisor right now. Please check your API key and try again.",
+        timestamp: Date.now()
+      };
+      setMessages(prev => [...prev, errMsg]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   if (!isOpen) return null;

@@ -35,7 +35,7 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandC
     if (!newReviewText || !newReviewAuthor) return;
     
     const newReview: Review = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       rating: newReviewRating,
       text: newReviewText,
       author: newReviewAuthor,

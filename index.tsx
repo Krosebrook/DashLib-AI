@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const PWAPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -69,7 +70,9 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <App />
-    <PWAPrompt />
+    <ErrorBoundary>
+      <App />
+      <PWAPrompt />
+    </ErrorBoundary>
   </React.StrictMode>
 );
