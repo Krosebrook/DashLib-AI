@@ -15,6 +15,8 @@ export interface Template {
   alertThreshold?: string;
   variants?: string[];
   hasInteractiveSandbox?: boolean;
+  reviews?: Review[];
+  averageRating?: number;
 }
 
 export enum DashboardCategory {
@@ -23,7 +25,18 @@ export enum DashboardCategory {
   AIOps = "AI/LLM Operations",
   MarketingSales = "Marketing & Sales",
   TeamOps = "Team & Operations",
-  EnterpriseGov = "Enterprise & Governance"
+  EnterpriseGov = "Enterprise & Governance",
+  MarketingAnalytics = "Marketing",
+  HumanResources = "HR",
+  ProjectManagement = "Project Management"
+}
+
+export interface Review {
+  id: string;
+  rating: number;
+  text: string;
+  author: string;
+  date: string;
 }
 
 export interface ChatMessage {

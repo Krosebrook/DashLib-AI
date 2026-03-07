@@ -1,32 +1,47 @@
+# Verification & Testing Protocols (v3.8)
 
-# Verification & Testing Protocols (v3.6)
+## 1. Multimodal Synthesis Engine
+- **Protocol 1.1: Vision-to-UI**
+  - **Step 1**: Open **Magic Generator** -> **Vision** tab.
+  - **Step 2**: Upload a dashboard screenshot (PNG/JPG).
+  - **Step 3**: Click **"Generate Component"**.
+  - **Verify**: The generated code replicates the layout and metric cards from the image.
+- **Protocol 1.2: Voice-to-Dashboard**
+  - **Step 1**: Open **Magic Generator** -> **Prompt** tab.
+  - **Step 2**: Click **"Dictate"** (Microphone icon).
+  - **Step 3**: Speak: "Create a marketing dashboard for Instagram engagement."
+  - **Verify**: The prompt text area populates with the transcribed speech.
+  - **Step 4**: Click **"Generate Component"**.
+  - **Verify**: Dashboard code is synthesized based on the voice input.
 
-## 1. Zero-Install PMA Validation
-- **Step 1**: Open any template (e.g., "MRR Growth").
-- **Step 2**: Generate Code.
-- **Step 3**: Click **"Download Portable App"**.
-- **Step 4**: Open the resulting `.html` file in a clean browser profile.
-- **Verify**: Component renders correctly with charts and icons.
-- **Verify**: No console errors related to missing dependencies.
+## 2. Security Sandbox Simulation
+- **Step 1**: Open **Security & Compliance** dashboard -> **Live Sandbox**.
+- **Step 2**: Create a rule: "Failed Login Attempts" > 10.
+- **Step 3**: Click **"Simulate Traffic"**.
+- **Verify**: If the generated value > 10, a red "Rule Violation Detected" banner appears.
 
-## 2. PWA Offline Deep-Linking
-- **Step 1**: Ensure Service Worker `v3.6` is active.
-- **Step 2**: Navigate to `/?template=security-compliance`.
-- **Step 3**: Toggle "Offline" in Chrome DevTools.
-- **Step 4**: Refresh the page.
-- **Verify**: The App Shell and specific template workbench load instantly via navigation fallback.
+## 3. A/B Model Testing
+- **Step 1**: Open **Model Performance** dashboard -> **Live Sandbox**.
+- **Step 2**: Select "GPT-4o" and "Gemini 3 Pro".
+- **Step 3**: Click **"Run Parallel Model Test"**.
+- **Verify**: Bar chart updates with comparative latency/cost metrics.
 
-## 3. Governance Sandbox Verification
-- **Step 1**: Add a rule for "Failed Login Attempts" > 5.
-- **Verify**: The rule appears in "Active Policy Inventory".
-- **Step 2**: Toggle rule off/on. Verify UI state updates.
-- **Step 3**: Refresh page. Verify rule persistence in `localStorage`.
+## 4. PWA Offline Resilience & Service Worker
+- **Protocol 4.1: Service Worker Registration**
+  - **Step 1**: Open DevTools -> Application -> Service Workers.
+  - **Verify**: `sw.js` is active and running. Version should be `v3.8`.
+- **Protocol 4.2: Offline Navigation Fallback**
+  - **Step 1**: Set Network to "Offline" in DevTools.
+  - **Step 2**: Attempt to navigate to a non-existent route (e.g., `/dashboard/custom-view`).
+  - **Verify**: The Service Worker intercepts the request and serves `/index.html`.
 
-## 4. A/B Testing Verification
-- **Step 1**: Select "GPT-4o" and "Gemini 3 Pro".
-- **Step 2**: Run Parallel Test.
-- **Verify**: Results appear side-by-side with distinct Latency/Cost metrics.
-- **Verify**: Comparative bar chart renders in the visualization matrix.
+## 5. Zero-Install PMA v2.0 Validation
+- **Step 1**: Generate code for any template in the Magic Generator.
+- **Step 2**: Click **"Download Portable App"**.
+- **Step 3**: Open the downloaded `.html` file in a browser.
+- **Verify**: The "Synthesizing Dashboard..." loading animation appears.
+- **Verify**: The dashboard renders correctly using React 19 and `esm.sh` imports.
+- **Verify**: Charts are interactive and icons (Lucide) are visible.
 
 ---
-© 2025 DashLib AI QA Hub.
+© 2026 DashLib AI QA Hub.

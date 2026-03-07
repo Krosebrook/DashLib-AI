@@ -35,7 +35,7 @@ const App: React.FC = () => {
     density: 'comfortable'
   });
 
-  // Simulated System Alerts
+  // System Alerts State
   const [systemAlerts, setSystemAlerts] = useState<SystemAlert[]>([
     { 
       id: 'alert-1', 
@@ -43,13 +43,6 @@ const App: React.FC = () => {
       message: 'Hallucination rate spike detected in GPT-4o stream.', 
       severity: 'warning', 
       timestamp: Date.now() 
-    },
-    { 
-      id: 'alert-2', 
-      templateId: 'security-compliance', 
-      message: 'Unauthorized IAM role escalation attempt blocked.', 
-      severity: 'critical', 
-      timestamp: Date.now() - 50000 
     }
   ]);
 
@@ -68,14 +61,32 @@ const App: React.FC = () => {
                               t.category === activeCategory || 
                               (activeCategory === 'Favorites' && favorites.includes(t.id));
       
-      const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            t.purpose.toLowerCase().includes(searchQuery.toLowerCase());
+
       
+      const matchesSearch = 
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        t.purpose.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.metrics.some(m => m.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        t.dataSources.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+
       const matchesSource = activeSourceFilter === 'All Sources' || t.dataSources.includes(activeSourceFilter);
 
       return matchesCategory && matchesSearch && matchesSource;
     });
   }, [activeCategory, searchQuery, activeSourceFilter, favorites]);
+
+  // Global Alert Handler passed to children
+  const addSystemAlert = (templateId: string, message: string, severity: 'critical' | 'warning' | 'info') => {
+    const newAlert: SystemAlert = {
+      id: Math.random().toString(36).substr(2, 9),
+      templateId,
+      message,
+      severity,
+      timestamp: Date.now()
+    };
+    // Prepend to show most recent first
+    setSystemAlerts(prev => [newAlert, ...prev]);
+  };
 
   const dismissAlert = (id: string) => {
     setSystemAlerts(prev => prev.filter(a => a.id !== id));
@@ -191,6 +202,27 @@ const App: React.FC = () => {
         </div>
       </section>
 
+      {/* Featured Templates */}
+      <section className="mb-16">
+        <div className="flex items-center justify-between mb-8">
+          <h3 className="text-2xl font-black text-slate-900 tracking-tight">Featured Templates</h3>
+          <button onClick={() => { setActiveCategory('All'); setSearchQuery(''); }} className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+            View All <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {templates.filter(t => ['mrr-growth', 'llm-performance-comparison', 'security-compliance', 'agile-sprint-velocity'].includes(t.id)).map(template => (
+            <TemplateCard 
+              key={`featured-${template.id}`} 
+              template={template} 
+              onClick={setSelectedTemplate}
+              isFavorite={favorites.includes(template.id)}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
+        </div>
+      </section>
+
       {/* Workspace Navigation & Filter Hub */}
       <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8 sticky top-[5.5rem] z-40 bg-slate-50/95 backdrop-blur-md py-6 border-b border-transparent">
         <div className="w-full md:max-w-xl space-y-4">
@@ -302,6 +334,7 @@ const App: React.FC = () => {
           template={selectedTemplate} 
           onClose={() => setSelectedTemplate(null)}
           brandConfig={brandConfig} 
+          onAddAlert={addSystemAlert}
         />
       )}
 

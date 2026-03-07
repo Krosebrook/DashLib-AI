@@ -1,25 +1,56 @@
 
 import React, { useState, useEffect } from 'react';
-import { Template, BrandConfig, AuditReport } from '../types';
-import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy, Play, Layers, Sidebar, Cpu, Github, ClipboardCheck, Zap, ShieldAlert, Award, Download } from 'lucide-react';
+import { Template, BrandConfig, AuditReport, Review } from '../types';
+import { X, Code, Check, Database, LineChart, AlertTriangle, FileText, Loader2, Copy, Play, Layers, Sidebar, Cpu, Github, ClipboardCheck, Zap, ShieldAlert, Award, Download, Star } from 'lucide-react';
 import { generateDashboardCode, generateDashboardAudit } from '../services/geminiService';
 import { openInStackBlitz, downloadStandaloneHTML } from '../utils/exportUtils';
 import SecuritySandbox from './SecuritySandbox';
 import ModelSandbox from './ModelSandbox';
+import { usePersistentState } from '../hooks/usePersistentState';
 
 interface TemplateModalProps {
   template: Template;
   onClose: () => void;
   brandConfig?: BrandConfig;
+  onAddAlert?: (templateId: string, message: string, severity: 'critical' | 'warning' | 'info') => void;
 }
 
-const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandConfig }) => {
-  const [activeTab, setActiveTab] = useState<'details' | 'code' | 'sandbox' | 'audit'>('details');
+const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandConfig, onAddAlert }) => {
+  const [activeTab, setActiveTab] = useState<'details' | 'code' | 'sandbox' | 'audit' | 'reviews'>('details');
   const [generatedCode, setGeneratedCode] = useState<string>('');
   const [auditReport, setAuditReport] = useState<AuditReport | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuditing, setIsAuditing] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const [templateReviews, setTemplateReviews] = usePersistentState<Record<string, Review[]>>('dashlib-reviews', {});
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewText, setNewReviewText] = useState('');
+  const [newReviewAuthor, setNewReviewAuthor] = useState('');
+
+  const currentReviews = templateReviews[template.id] || template.reviews || [];
+  
+  const handleSubmitReview = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newReviewText || !newReviewAuthor) return;
+    
+    const newReview: Review = {
+      id: Math.random().toString(36).substr(2, 9),
+      rating: newReviewRating,
+      text: newReviewText,
+      author: newReviewAuthor,
+      date: new Date().toISOString().split('T')[0]
+    };
+    
+    setTemplateReviews({
+      ...templateReviews,
+      [template.id]: [newReview, ...currentReviews]
+    });
+    
+    setNewReviewText('');
+    setNewReviewAuthor('');
+    setNewReviewRating(5);
+  };
 
   // Focus trapping and keyboard shortcuts
   useEffect(() => {
@@ -65,8 +96,12 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandC
   };
 
   const renderSandbox = () => {
-    if (template.id === 'security-compliance') return <SecuritySandbox />;
-    if (template.id === 'llm-performance-comparison') return <ModelSandbox />;
+    if (template.id === 'security-compliance') {
+        return <SecuritySandbox onTriggerAlert={onAddAlert} templateId={template.id} />;
+    }
+    if (template.id === 'llm-performance-comparison') {
+        return <ModelSandbox onTriggerAlert={onAddAlert} templateId={template.id} />;
+    }
     return (
       <div className="flex flex-col items-center justify-center h-full text-slate-400 py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
         <Cpu className="w-12 h-12 mb-4 opacity-10" />
@@ -139,6 +174,14 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandC
             >
               <ClipboardCheck className="w-5 h-5 shrink-0" />
               <span className="hidden md:inline">Architect's Audit</span>
+            </button>
+
+            <button 
+              onClick={() => setActiveTab('reviews')}
+              className={`flex items-center gap-3 p-3.5 rounded-2xl text-sm font-bold transition-all ${activeTab === 'reviews' ? 'bg-white text-indigo-600 shadow-xl shadow-indigo-500/10 border border-slate-100' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'}`}
+            >
+              <Star className="w-5 h-5 shrink-0" />
+              <span className="hidden md:inline">User Reviews</span>
             </button>
 
             <div className="mt-auto pt-6 space-y-4">
@@ -275,6 +318,87 @@ const TemplateModal: React.FC<TemplateModalProps> = ({ template, onClose, brandC
             ) : activeTab === 'sandbox' ? (
               <div className="flex-1 animate-in fade-in duration-300">
                 {renderSandbox()}
+              </div>
+            ) : activeTab === 'reviews' ? (
+              <div className="flex-1 animate-in fade-in duration-300 flex flex-col gap-8">
+                <div className="bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                  <h3 className="text-lg font-black text-slate-900 mb-6">Submit a Review</h3>
+                  <form onSubmit={handleSubmitReview} className="space-y-4">
+                    <div className="flex items-center gap-4 mb-4">
+                      <span className="text-sm font-bold text-slate-600">Rating:</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map(star => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setNewReviewRating(star)}
+                            className={`p-1 transition-colors ${star <= newReviewRating ? 'text-amber-400' : 'text-slate-300'}`}
+                          >
+                            <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <input 
+                        type="text" 
+                        placeholder="Your Name / Role" 
+                        value={newReviewAuthor}
+                        onChange={e => setNewReviewAuthor(e.target.value)}
+                        className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                        required
+                      />
+                    </div>
+                    <textarea 
+                      placeholder="Share your experience with this template..." 
+                      value={newReviewText}
+                      onChange={e => setNewReviewText(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium min-h-[100px]"
+                      required
+                    />
+                    <button 
+                      type="submit"
+                      className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
+                    >
+                      Post Review
+                    </button>
+                  </form>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-black text-slate-900 mb-4">Community Reviews ({currentReviews.length})</h3>
+                  {currentReviews.length > 0 ? (
+                    currentReviews.map(review => (
+                      <div key={review.id} className="p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-xs">
+                              {review.author.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-slate-900">{review.author}</p>
+                              <p className="text-[10px] text-slate-400 font-medium">{review.date}</p>
+                            </div>
+                          </div>
+                          <div className="flex text-amber-400">
+                            {[...Array(5)].map((_, i) => (
+                              <svg key={i} className={`w-4 h-4 ${i < review.rating ? 'fill-current' : 'text-slate-200 fill-current'}`} viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed">{review.text}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <p className="text-slate-500 font-medium">No reviews yet. Be the first to review this template!</p>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="flex-1 flex flex-col animate-in fade-in duration-300">

@@ -1,23 +1,22 @@
+# Observability & Metrics Strategy (v3.8)
 
-# Observability & Metrics Strategy (v3.6)
+## 1. Multimodal Synthesis Metrics
+- **Vision Usage Rate**: Percentage of generations initiated via the "Vision" tab.
+- **Voice Session Duration**: Average length of Gemini Live voice dictation sessions.
+- **Synthesis Success Rate**: Ratio of successful code streams vs connection disruptions.
 
-## 1. Export Observability
-- **PMA Download Volume**: Tracking frequency of standalone HTML exports.
-- **StackBlitz Conversion**: Monitoring developer transition from preview to IDE.
-- **Code Generation Success Rate**: Ratio of valid vs malformed React component outputs from the Gemini 3 engine.
+## 2. Sandbox Interaction Metrics
+- **Simulation Frequency**: How often users click "Simulate Traffic" in the Security Sandbox.
+- **Rule Complexity**: Average number of active rules per user workspace.
+- **Model Comparison Rate**: Frequency of multi-model A/B tests run in the Model Sandbox.
 
-## 2. PWA & Caching Health
-- **Cache Hit Ratio (v3.6)**: Percentage of asset requests served from `CACHE_NAME`.
-- **Installation Rate**: Users opting to "Install App" to desktop/mobile.
-- **SW Lifecycle Events**: Monitoring frequency of `install`/`activate` errors in production environments.
+## 3. Export Observability
+- **PMA v2.0 Download Volume**: Tracking frequency of standalone HTML exports using the new React 19 template.
+- **StackBlitz Conversion**: Monitoring developer transition from preview to IDE for advanced customization.
 
-## 3. Governance Rule Analytics
-- **Rule Cardinality**: Average number of custom policies per user session.
-- **Alert Trigger Frequency**: Monitoring simulated alert violations to optimize threshold UX.
-
-## 4. Model Benchmarking Performance
-- **Inference Latency**: p95 timing for A/B testing runs.
-- **Drift Detection**: Rate of "Performance Drift" alerts triggered during model comparisons.
+## 4. PWA & Caching Health
+- **Cache Hit Ratio (v3.8)**: Percentage of asset requests served from the `dashlib-ai-v3.8` cache.
+- **Offline Session Duration**: Time users spend in the app while disconnected, specifically using the generator or sandbox.
 
 ---
-© 2025 DashLib AI Observability Hub.
+© 2026 DashLib AI Observability Hub.

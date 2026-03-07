@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
-import { Zap, Play, CheckCircle2, AlertTriangle, Clock, DollarSign, BrainCircuit, BarChart2, MessageSquareText, Layers, Trash2, Check, X, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Play, CheckCircle2, Clock, DollarSign, BrainCircuit, BarChart2, MessageSquareText, Check, Loader2, Zap, Trophy } from 'lucide-react';
 import { usePersistentState } from '../hooks/usePersistentState';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LabelList } from 'recharts';
 
 interface TestResult {
   model: string;
@@ -11,6 +10,11 @@ interface TestResult {
   cost: number;
   tokens: number;
   quality: number; // 1-10 scale
+}
+
+interface ModelSandboxProps {
+  onTriggerAlert?: (templateId: string, message: string, severity: 'critical' | 'warning' | 'info') => void;
+  templateId?: string;
 }
 
 const MODELS = [
@@ -27,12 +31,14 @@ const MOCK_DATA: Record<string, TestResult> = {
   'Gemini 3 Pro': { model: 'Gemini 3 Pro', response: 'Industrial: Mechanization. AI: Digitization and Autonomy of Reasoning.', latency: 310, cost: 0.002, tokens: 121, quality: 9.2 }
 };
 
-const ModelSandbox: React.FC = () => {
+type MetricType = 'latency' | 'cost' | 'tokens' | 'quality';
+
+const ModelSandbox: React.FC<ModelSandboxProps> = ({ onTriggerAlert, templateId }) => {
   const [prompt, setPrompt] = useState('Compare the industrial revolution with the rise of AI.');
   const [selectedModels, setSelectedModels] = useState<string[]>(['GPT-4o', 'Claude 3.5 Sonnet']);
   const [isTesting, setIsTesting] = useState(false);
   const [results, setResults] = usePersistentState<TestResult[]>('dashlib-ab-results', []);
-  const [showBanner, setShowBanner] = useState(false);
+  const [activeMetric, setActiveMetric] = useState<MetricType>('latency');
 
   const runTest = () => {
     setIsTesting(true);
@@ -42,12 +48,20 @@ const ModelSandbox: React.FC = () => {
         ...MOCK_DATA[id],
         // Add random jitter to metrics for realism
         latency: Math.floor(MOCK_DATA[id].latency * (0.8 + Math.random() * 0.4)),
+        tokens: Math.floor(MOCK_DATA[id].tokens * (0.9 + Math.random() * 0.2)),
+        quality: Number((MOCK_DATA[id].quality * (0.95 + Math.random() * 0.1)).toFixed(1))
       }));
       setResults(newResults);
       setIsTesting(false);
-      // Logic for banner: if hallucination rate (simulated) is high
-      if (newResults.some(r => r.quality < 8.5)) {
-        setShowBanner(true);
+      
+      // Check for performance drift (simulated rule: quality < 8.5)
+      const degraded = newResults.find(r => r.quality < 8.5);
+      if (degraded && onTriggerAlert) {
+         onTriggerAlert(
+             templateId || 'llm-performance', 
+             `Model Drift Detected: ${degraded.model} quality score fell below baseline (8.5).`, 
+             'warning'
+         );
       }
     }, 1500);
   };
@@ -60,27 +74,15 @@ const ModelSandbox: React.FC = () => {
     }
   };
 
+  const metricConfig = {
+    latency: { label: 'Latency (ms)', icon: Clock, color: '#f59e0b' },
+    cost: { label: 'Cost ($)', icon: DollarSign, color: '#10b981' },
+    tokens: { label: 'Token Usage', icon: Zap, color: '#6366f1' },
+    quality: { label: 'Quality Score (1-10)', icon: Trophy, color: '#ec4899' }
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in duration-500 pb-12">
-      {/* Alert Banner */}
-      {showBanner && (
-        <div className="bg-amber-500 text-white p-4 rounded-2xl flex items-center justify-between shadow-xl animate-in slide-in-from-top-4">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5" />
-            <div>
-              <p className="text-sm font-black uppercase tracking-widest">Performance Drift Detected</p>
-              <p className="text-xs font-medium opacity-90">Open-source models showing high variance in quality vs quality baselines.</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="text-xs font-black uppercase tracking-widest hover:underline">View Benchmark Details</button>
-            <button onClick={() => setShowBanner(false)} className="p-1 hover:bg-white/20 rounded-lg transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Control Hub */}
       <div className="bg-white p-8 rounded-[3rem] border border-slate-200 shadow-xl">
         <div className="flex items-center gap-4 mb-10">
@@ -184,25 +186,67 @@ const ModelSandbox: React.FC = () => {
 
           {/* Metric Comparison Visualization */}
           <div className="bg-slate-900 p-10 rounded-[3rem] shadow-2xl border border-slate-800">
-            <div className="flex items-center justify-between mb-10">
-              <h4 className="text-xl font-black text-white tracking-tight uppercase">Comparative Performance Matrix</h4>
-              <BarChart2 className="w-6 h-6 text-indigo-400" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-6">
+              <div className="flex items-center gap-3">
+                <BarChart2 className="w-6 h-6 text-indigo-400" />
+                <div>
+                  <h4 className="text-xl font-black text-white tracking-tight uppercase">Performance Matrix</h4>
+                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">Comparative Analysis</p>
+                </div>
+              </div>
+              
+              <div className="flex bg-slate-800 p-1 rounded-xl overflow-x-auto">
+                {(Object.keys(metricConfig) as MetricType[]).map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setActiveMetric(key)}
+                    className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                      activeMetric === key 
+                        ? 'bg-slate-700 text-white shadow-md' 
+                        : 'text-slate-500 hover:text-slate-300'
+                    }`}
+                  >
+                    {metricConfig[key].label}
+                  </button>
+                ))}
+              </div>
             </div>
             
             <div className="h-80 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={results} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                  <XAxis dataKey="model" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '12px', fontSize: '10px', color: '#fff' }} 
-                    itemStyle={{ color: '#fff' }}
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                  <XAxis 
+                    dataKey="model" 
+                    stroke="#94a3b8" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    fontWeight={700}
                   />
-                  <Bar dataKey="latency" name="Latency (ms)" radius={[10, 10, 0, 0]}>
+                  <YAxis 
+                    stroke="#94a3b8" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(val) => activeMetric === 'cost' ? `$${val}` : val}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#1e293b', opacity: 0.4 }}
+                    contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)' }} 
+                    itemStyle={{ color: '#fff', fontWeight: 600 }}
+                    formatter={(val: number) => [activeMetric === 'cost' ? `$${val}` : val, metricConfig[activeMetric].label]}
+                  />
+                  <Bar 
+                    dataKey={activeMetric} 
+                    name={metricConfig[activeMetric].label} 
+                    radius={[8, 8, 0, 0]}
+                    animationDuration={1000}
+                  >
                     {results.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={MODELS.find(m => m.id === entry.model)?.color || '#4f46e5'} />
                     ))}
+                    <LabelList dataKey={activeMetric} position="top" fill="#94a3b8" fontSize={10} fontWeight={700} formatter={(val: number) => activeMetric === 'cost' ? `$${val}` : val} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>

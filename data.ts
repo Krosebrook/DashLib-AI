@@ -652,5 +652,127 @@ export const templates: Template[] = [
     metrics: ['Assets Due for Replacement', 'Resale Value Est', 'Maintenance Cost > Asset Value', 'New Asset Capex'],
     visualizations: ['Scatter: Age vs Cost', 'List: Replacement Queue', 'Bar: Budget Forecast'],
     notes: 'Lifecycle management.'
+  },
+  // ===========================================================================
+  // NEW: EXPANDED CATEGORIES
+  // ===========================================================================
+
+  // --- Marketing Analytics ---
+  {
+    id: 'campaign-performance-tracker',
+    category: DashboardCategory.MarketingAnalytics,
+    title: 'Campaign Performance Tracker',
+    purpose: 'Monitor multi-channel marketing campaigns and ROI',
+    refreshRate: 'Daily',
+    dataSources: ['Google Ads', 'Meta Ads', 'LinkedIn Ads', 'HubSpot'],
+    metrics: ['Total Ad Spend', 'Cost Per Click (CPC)', 'Conversion Rate', 'Return on Ad Spend (ROAS)'],
+    visualizations: ['Bar: Spend by Channel', 'Line: Conversions over Time', 'Pie: Traffic Sources'],
+    notes: 'Alerts on ROAS dropping below 2.0.',
+    averageRating: 4.8,
+    reviews: [
+      { id: 'r1', rating: 5, text: 'Perfect for tracking our cross-channel spend.', author: 'Marketing Lead', date: '2026-02-15' },
+      { id: 'r2', rating: 4, text: 'Good visualizations, easy to read.', author: 'Growth Hacker', date: '2026-02-20' }
+    ]
+  },
+  {
+    id: 'seo-content-analytics',
+    category: DashboardCategory.MarketingAnalytics,
+    title: 'SEO & Content Analytics',
+    purpose: 'Track organic search visibility and content engagement',
+    refreshRate: 'Weekly',
+    dataSources: ['Google Search Console', 'Ahrefs', 'Google Analytics'],
+    metrics: ['Organic Traffic', 'Keyword Rankings', 'Bounce Rate', 'Avg Time on Page'],
+    visualizations: ['Line: Organic Traffic Trend', 'Table: Top Performing Pages', 'Bar: Keyword Position Changes'],
+    notes: 'Helps identify content decay and optimization opportunities.'
+  },
+
+  // --- Human Resources ---
+  {
+    id: 'employee-retention-dashboard',
+    category: DashboardCategory.HumanResources,
+    title: 'Employee Retention & Turnover',
+    purpose: 'Analyze employee churn and identify retention risks',
+    refreshRate: 'Monthly',
+    dataSources: ['Workday', 'BambooHR', 'Exit Interviews'],
+    metrics: ['Turnover Rate', 'Avg Tenure', 'Voluntary vs Involuntary Churn', 'eNPS'],
+    visualizations: ['Line: Turnover Trend', 'Bar: Churn by Department', 'Pie: Reasons for Leaving'],
+    notes: 'Includes predictive risk scoring for key roles.',
+    averageRating: 4.5,
+    reviews: [
+      { id: 'r3', rating: 5, text: 'Helped us reduce churn in engineering by 15%.', author: 'VP of HR', date: '2026-01-10' }
+    ]
+  },
+  {
+    id: 'recruitment-pipeline',
+    category: DashboardCategory.HumanResources,
+    title: 'Recruitment Pipeline Tracker',
+    purpose: 'Monitor hiring velocity and candidate pipeline health',
+    refreshRate: 'Daily',
+    dataSources: ['Greenhouse', 'Lever', 'LinkedIn Recruiter'],
+    metrics: ['Time to Fill', 'Cost per Hire', 'Offer Acceptance Rate', 'Active Candidates'],
+    visualizations: ['Funnel: Candidate Journey', 'Bar: Hires by Source', 'Gauge: Offer Acceptance %'],
+    notes: 'Alerts when time-to-fill exceeds 45 days for critical roles.'
+  },
+
+  // --- Project Management ---
+  {
+    id: 'agile-sprint-velocity',
+    category: DashboardCategory.ProjectManagement,
+    title: 'Agile Sprint Velocity',
+    purpose: 'Track engineering team velocity and sprint completion rates',
+    refreshRate: 'Real-time',
+    dataSources: ['Jira', 'Linear', 'GitHub'],
+    metrics: ['Sprint Velocity', 'Story Points Completed', 'Bug Escape Rate', 'Scope Creep %'],
+    visualizations: ['Bar: Velocity over last 5 sprints', 'Burndown Chart', 'Pie: Issue Types'],
+    notes: 'Essential for scrum masters and engineering managers.',
+    averageRating: 4.9,
+    reviews: [
+      { id: 'r4', rating: 5, text: 'The burndown chart is incredibly accurate.', author: 'Scrum Master', date: '2026-02-28' },
+      { id: 'r5', rating: 5, text: 'Must-have for our weekly syncs.', author: 'Engineering Manager', date: '2026-03-01' }
+    ]
+  },
+  {
+    id: 'resource-allocation-heatmap',
+    category: DashboardCategory.ProjectManagement,
+    title: 'Resource Allocation Heatmap',
+    purpose: 'Visualize team capacity and prevent burnout',
+    refreshRate: 'Weekly',
+    dataSources: ['Asana', 'Monday.com', 'Resource Management Tool'],
+    metrics: ['Team Utilization %', 'Overallocated Staff', 'Available Hours', 'Project Health Score'],
+    visualizations: ['Heatmap: Capacity by Team Member', 'Bar: Hours Logged vs Planned', 'List: At-Risk Projects'],
+    notes: 'Highlights team members exceeding 110% capacity.'
+  },
+  {
+    id: 'social-media-engagement',
+    category: DashboardCategory.MarketingAnalytics,
+    title: 'Social Media Engagement',
+    purpose: 'Track brand sentiment and engagement across social platforms',
+    refreshRate: 'Daily',
+    dataSources: ['Twitter API', 'Instagram Graph API', 'LinkedIn Marketing Solutions'],
+    metrics: ['Engagement Rate', 'Share of Voice', 'Sentiment Score', 'Follower Growth'],
+    visualizations: ['Line: Engagement Trends', 'Pie: Sentiment Breakdown', 'Bar: Top Performing Posts'],
+    notes: 'Uses NLP for sentiment analysis on comments.'
+  },
+  {
+    id: 'training-development-analytics',
+    category: DashboardCategory.HumanResources,
+    title: 'Training & Development Analytics',
+    purpose: 'Monitor employee upskilling and certification progress',
+    refreshRate: 'Monthly',
+    dataSources: ['LMS (Cornerstone)', 'Udemy for Business', 'Internal HRIS'],
+    metrics: ['Course Completion Rate', 'Skills Gap Index', 'Training ROI', 'Certifications Earned'],
+    visualizations: ['Radar Chart: Skills Proficiency', 'Bar: Completion by Department', 'Line: Training Hours over Time'],
+    notes: 'Correlates training completion with performance reviews.'
+  },
+  {
+    id: 'portfolio-health-overview',
+    category: DashboardCategory.ProjectManagement,
+    title: 'Portfolio Health Overview',
+    purpose: 'High-level view of all active projects for executives',
+    refreshRate: 'Weekly',
+    dataSources: ['Smartsheet', 'Wrike', 'Oracle Primavera'],
+    metrics: ['Portfolio Health Score', 'Budget Variance', 'Schedule Variance', 'Risk Level'],
+    visualizations: ['Bubble Chart: Risk vs Reward', 'Gantt: Portfolio Timeline', 'KPI Card: Total Portfolio Value'],
+    notes: 'Aggregated view for PMO directors.'
   }
 ];

@@ -1,7 +1,7 @@
 
-const CACHE_NAME = 'dashlib-ai-v3.6';
+const CACHE_NAME = 'dashlib-ai-v3.9';
 
-// Assets required for the core app shell to function offline
+// Core assets to pre-cache on install
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,7 @@ const CORE_ASSETS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap',
 ];
 
-// Third-party assets to be cached using Stale-While-Revalidate
+// Icons and heavy assets
 const DYNAMIC_ASSETS = [
   'https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/dashboard/black/192dp.png',
   'https://cdn.jsdelivr.net/gh/google/material-design-icons/png/action/dashboard/black/512dp.png',
@@ -24,7 +24,7 @@ const DYNAMIC_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[PWA] Pre-caching Core App Shell');
+      console.log('[PWA] Pre-caching Core App Shell v3.9');
       return cache.addAll([...CORE_ASSETS, ...DYNAMIC_ASSETS]);
     })
   );
@@ -51,37 +51,48 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // 1. Navigation Fallback for SPA routing
-  // Ensures sub-routes or refreshes serve the main index.html
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => caches.match('./index.html'))
-    );
-    return;
-  }
-
-  // 2. Bypass Strategy for Gemini API (Inference must be fresh and secure)
+  // 1. Bypass Strategy for APIs and non-GET
   if (url.hostname.includes('googleapis.com') || request.method !== 'GET') {
     return;
   }
 
-  // 3. Stale-While-Revalidate Strategy
-  // Serve from cache immediately, update cache in background
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
+  // 2. Navigation Fallback Strategy
+  // For navigation requests, try network first, then cache, then fallback to index.html
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Update cache with latest index.html
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          return response;
+        })
+        .catch(() => {
+          // If network fails, try cache, then fallback to index.html
+          return caches.match(request).then((response) => {
+            return response || caches.match('./index.html');
           });
+        })
+    );
+    return;
+  }
+
+  // 3. Stale-While-Revalidate Strategy for all other assets
+  event.respondWith(
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const cachedResponse = await cache.match(request);
+      
+      const fetchPromise = fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && 
+           (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
+          cache.put(request, networkResponse.clone());
         }
         return networkResponse;
-      }).catch((err) => {
-        console.warn('[PWA] Fetch failed, returning cached asset if available', err);
-        return cachedResponse;
+      }).catch(() => {
+        // Network failure is expected offline
       });
 
+      // Return cached response immediately if available, otherwise wait for fetch
       return cachedResponse || fetchPromise;
     })
   );
