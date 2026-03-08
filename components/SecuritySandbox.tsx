@@ -32,7 +32,7 @@ const SecuritySandbox: React.FC<SecuritySandboxProps> = ({ onTriggerAlert, templ
 
   const addRule = () => {
     const newRule: SecurityRule = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
       metric,
       condition,
       value,
